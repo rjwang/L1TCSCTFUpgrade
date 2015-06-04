@@ -1,6 +1,5 @@
 # L1TCSCTFUpgrade
 ==================
-
 General:
 
         cmsrel CMSSW_6_2_3
