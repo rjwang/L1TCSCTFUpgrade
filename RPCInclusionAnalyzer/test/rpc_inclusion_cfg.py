@@ -6,7 +6,7 @@ from L1TCSCTFUpgrade.RPCInclusionAnalyzer.rpc_inclusion_cfi import *
 
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         )
