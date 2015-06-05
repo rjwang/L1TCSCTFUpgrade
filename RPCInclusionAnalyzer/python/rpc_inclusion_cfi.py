@@ -1,9 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.EDAnalyzer('RPCInclusionAnalyzer')
+process = cms.Process('RPCInclusionAnalyzer')
 
 
 process.RPCInclusionAnalyzer = cms.EDAnalyzer('RPCInclusionAnalyzer',
 	dtag = cms.string('csctf'),
-	isMC = cms.untracked.bool(False)
+	isMC = cms.bool(False)
 )

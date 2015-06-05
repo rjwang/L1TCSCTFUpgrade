@@ -11,6 +11,16 @@ process.options = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                                         )
 
+#load run conditions
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+
+
+# Global Tag to specify the "good" events to run over
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:mc', '')
+
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 
@@ -24,7 +34,7 @@ process.source = cms.Source("PoolSource",
 
 
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string("csctf_Run246926.root")
+                                   fileName = cms.string("csctf_test.root")
                                   )
 
 
