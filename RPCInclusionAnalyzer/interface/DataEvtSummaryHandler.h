@@ -21,12 +21,17 @@
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > LorentzVector;
 typedef std::vector<LorentzVector> LorentzVectorCollection;
 
-#define MAXLUTS 50
+#define MAXPARTICLES 500
 
 struct DataEvtSummary_t {
 
     Int_t run,lumi,event;
 
+    //electron
+    Int_t rpc;
+    Int_t rpc_region[MAXPARTICLES],rpc_roll[MAXPARTICLES],rpc_nhits[MAXPARTICLES];
+    Int_t rpc_station[MAXPARTICLES],rpc_sector[MAXPARTICLES],rpc_subsector[MAXPARTICLES],rpc_ring[MAXPARTICLES],rpc_layer[MAXPARTICLES];
+    Float_t rpc_phi[MAXPARTICLES],rpc_eta[MAXPARTICLES];
 
 };
 
