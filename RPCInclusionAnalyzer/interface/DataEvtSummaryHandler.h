@@ -27,11 +27,37 @@ struct DataEvtSummary_t {
 
     Int_t run,lumi,event;
 
-    //electron
+    //rpc
     Int_t rpc;
     Int_t rpc_region[MAXPARTICLES],rpc_roll[MAXPARTICLES],rpc_nhits[MAXPARTICLES];
-    Int_t rpc_station[MAXPARTICLES],rpc_sector[MAXPARTICLES],csc_sector[MAXPARTICLES],rpc_subsector[MAXPARTICLES],rpc_ring[MAXPARTICLES],rpc_layer[MAXPARTICLES];
+    Int_t rpc_station[MAXPARTICLES],rpc_sector[MAXPARTICLES],rpc_cscsector[MAXPARTICLES],rpc_phibit[MAXPARTICLES],rpc_subsector[MAXPARTICLES],rpc_ring[MAXPARTICLES],rpc_layer[MAXPARTICLES];
     Float_t rpc_phi[MAXPARTICLES],rpc_eta[MAXPARTICLES];
+
+    //csc
+    Int_t csctrk, csclct;
+
+    Int_t csc_lctstation[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctendcap[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctchamber[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctring[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctsector[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctsubsector[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctcscID[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctphibit[MAXPARTICLES][MAXPARTICLES];
+    Int_t csc_lctetabit[MAXPARTICLES][MAXPARTICLES];
+
+
+
+    Float_t csc_lctphi[MAXPARTICLES][MAXPARTICLES];
+    Float_t csc_lcteta[MAXPARTICLES][MAXPARTICLES];
+
+
+
+
+
+
+
+
 
 };
 
