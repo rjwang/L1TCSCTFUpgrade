@@ -316,6 +316,21 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
         ev.rpc_region[ev.rpc] = cluster_regions[nrpc];
         ev.rpc_station[ev.rpc] = cluster_stations[nrpc];
         ev.rpc_sector[ev.rpc] = cluster_sectors[nrpc];
+
+	// Cluster sector must be determined manually.  Sometimes the rpc sector and the cluster sector are not the same
+	if (ev.rpc_phi[ev.rpc] > 0.243 && ev.rpc_phi[ev.rpc] < 1.2914)
+		ev.csc_sector[ev.rpc] = 1;
+	else if (ev.rpc_phi[ev.rpc] > 1.2914 && ev.rpc_phi[ev.rpc] < 2.338)
+		ev.csc_sector[ev.rpc] = 2;
+	else if (ev.rpc_phi[ev.rpc] > 2.388 || ev.rpc_phi[ev.rpc] < -2.898)
+		ev.csc_sector[ev.rpc] = 3;
+	else if (ev.rpc_phi[ev.rpc] > -2.898 && ev.rpc_phi[ev.rpc] < -1.8507)
+		ev.csc_sector[ev.rpc] = 4;
+	else if (ev.rpc_phi[ev.rpc] > -1.8507 && ev.rpc_phi[ev.rpc] < -0.803)
+		ev.csc_sector[ev.rpc] = 5;
+	else if (ev.rpc_phi[ev.rpc] > -0.803 && ev.rpc_phi[ev.rpc] < 0.243)
+		ev.csc_sector[ev.rpc] = 6;
+
         ev.rpc_subsector[ev.rpc] = cluster_subsectors[nrpc];
         ev.rpc_ring[ev.rpc] = cluster_rings[nrpc];
         ev.rpc_layer[ev.rpc] = cluster_layers[nrpc];
