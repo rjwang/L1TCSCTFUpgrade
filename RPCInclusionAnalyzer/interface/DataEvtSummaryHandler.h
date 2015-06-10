@@ -33,6 +33,16 @@ struct DataEvtSummary_t {
     Int_t rpc_station[MAXPARTICLES],rpc_sector[MAXPARTICLES],rpc_cscsector[MAXPARTICLES],rpc_phibit[MAXPARTICLES],rpc_subsector[MAXPARTICLES],rpc_ring[MAXPARTICLES],rpc_layer[MAXPARTICLES];
     Float_t rpc_phi[MAXPARTICLES],rpc_eta[MAXPARTICLES];
 
+    //trk
+    Int_t trkPt_bit[MAXPARTICLES];
+    Float_t trkEta_bit[MAXPARTICLES];
+    Float_t trkPhi_bit[MAXPARTICLES];
+    Long_t trkMode[MAXPARTICLES];
+    Int_t trkCharge[MAXPARTICLES];
+    Float_t trkPt[MAXPARTICLES];
+    Double_t trkEta[MAXPARTICLES];
+    Double_t trkPhi[MAXPARTICLES];
+
     //csc
     Int_t csctrk, csclct;
 

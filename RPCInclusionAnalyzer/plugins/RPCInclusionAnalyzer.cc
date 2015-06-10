@@ -347,25 +347,32 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
         float trkEta_bit      = csctftrk -> eta_packed();
         float trkPhi_bit      = csctftrk -> phi_packed();
         unsigned long trkMode = csctftrk -> cscMode();
-        int trk_charge        = csctftrk -> chargeValue();
+        int trkCharge        = csctftrk -> chargeValue();
 
         // Access pt/eta in human readable form
         float trkPt  = ptscale[trkPt_bit];
-        double trEta = scale -> getRegionalEtaScale(2) -> getCenter(trkEta_bit);
-        double trPhi = scale -> getPhiScale() -> getLowEdge(trkPhi_bit);
+        double trkEta = scale -> getRegionalEtaScale(2) -> getCenter(trkEta_bit);
+        double trkPhi = scale -> getPhiScale() -> getLowEdge(trkPhi_bit);
 
-        //TODO, add above 8 variables in trees
-
+        // Write variables to tree
+        ev.trkPt_bit[ev.csctrk] = trkPt_bit;
+	ev.trkEta_bit[ev.csctrk] = trkEta_bit;
+	ev.trkPhi_bit[ev.csctrk] = trkPhi_bit;
+	ev.trkMode[ev.csctrk] = trkMode;
+	ev.trkCharge[ev.csctrk] = trkCharge;
+	ev.trkPt[ev.csctrk] = trkPt;
+	ev.trkEta[ev.csctrk] = trkEta;
+	ev.trkPhi[ev.csctrk] = trkPhi;
 
         cout << "\n\n====================== CSCTF Track ==================" << endl;
         cout << "trkPt_bit: " << trkPt_bit
              << " trkEta_bit: " << trkEta_bit
              << " trkPhi_bit: " << trkPhi_bit
              << " trkMode: " << trkMode
-             << " trk_charge: " << trk_charge << endl;
+             << " trkCharge: " << trkCharge << endl;
         cout << "trk Pt: " << trkPt
-             << " trk Eta: " << trEta
-             << " trk Phi: " << trPhi
+             << " trk Eta: " << trkEta
+             << " trk Phi: " << trkPhi
              << endl;
 
 

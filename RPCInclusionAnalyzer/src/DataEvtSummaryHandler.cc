@@ -25,10 +25,7 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
     t_->Branch("rpc_station",   evSummary_.rpc_station,                     "rpc_station/I");
     t_->Branch("rpc_sector",    evSummary_.rpc_sector,                     "rpc_sector/I");
     t_->Branch("rpc_cscsector",    evSummary_.rpc_cscsector,                   "rpc_cscsector/I");
-<<<<<<< HEAD
-=======
     t_->Branch("rpc_phibit",    evSummary_.rpc_phibit,                   "rpc_phibit/I");
->>>>>>> d19dd4b1c72cc71c2eabe24636fb0c99ab1108ce
     t_->Branch("rpc_subsector",	evSummary_.rpc_subsector,                     "rpc_subsector/I");
     t_->Branch("rpc_ring",      evSummary_.rpc_ring,                     "rpc_ring/I");
     t_->Branch("rpc_layer",     evSummary_.rpc_layer,                     "rpc_layer/I");
@@ -38,6 +35,16 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
     t_->Branch("rpc_phi",       evSummary_.rpc_phi,                     "rpc_phi/F");
     t_->Branch("rpc_eta",       evSummary_.rpc_eta,                     "rpc_eta/F");
 
+
+    //trk
+    t_->Branch("trkPt_bit",       &evSummary_.trkPt_bit,           "trkPt_bit/I");
+    t_->Branch("trkEta_bit",       &evSummary_.trkEta_bit,           "trkEta_bit/F");
+    t_->Branch("trkPhi_bit",       &evSummary_.trkPhi_bit,           "trkPhi_bit/F");
+    t_->Branch("trkMode",       &evSummary_.trkMode,           "trkMode/L");
+    t_->Branch("trkCharge",       &evSummary_.trkCharge,           "trkCharge/I");
+    t_->Branch("trkPt",       &evSummary_.trkPt,           "trkPt/F");
+    t_->Branch("trkEta",       &evSummary_.trkEta,           "trkEta/D");
+    t_->Branch("trkPhi",       &evSummary_.trkPhi,           "trkPhi/D");
 
 
     //csc
@@ -83,6 +90,7 @@ bool DataEvtSummaryHandler::attachToTree(TTree *t)
     t_->SetBranchAddress("lumi",            &evSummary_.lumi);
     t_->SetBranchAddress("event",           &evSummary_.event);
 
+    //rpc
     t_->SetBranchAddress("rpc",           	  &evSummary_.rpc);
     t_->SetBranchAddress("rpc_region",           evSummary_.rpc_region);
     t_->SetBranchAddress("rpc_station",           evSummary_.rpc_station);
@@ -98,7 +106,17 @@ bool DataEvtSummaryHandler::attachToTree(TTree *t)
     t_->SetBranchAddress("rpc_phi",           evSummary_.rpc_phi);
     t_->SetBranchAddress("rpc_eta",           evSummary_.rpc_eta);
 
-    //
+    //trk
+    t_->SetBranchAddress("trkPt_bit",         evSummary_.trkPt_bit);
+    t_->SetBranchAddress("trkEta_bit",         evSummary_.trkEta_bit);
+    t_->SetBranchAddress("trkPhi_bit",         evSummary_.trkPhi_bit);
+    t_->SetBranchAddress("trkMode",         evSummary_.trkMode);
+    t_->SetBranchAddress("trkCharge",         evSummary_.trkCharge);
+    t_->SetBranchAddress("trkPt",         evSummary_.trkPt);
+    t_->SetBranchAddress("trkEta",         evSummary_.trkEta);
+    t_->SetBranchAddress("trkPhi",         evSummary_.trkPhi);
+
+    //csc
     t_->SetBranchAddress("csctrk",                   &evSummary_.csctrk);
     t_->SetBranchAddress("csclct",                   &evSummary_.csclct);
 
