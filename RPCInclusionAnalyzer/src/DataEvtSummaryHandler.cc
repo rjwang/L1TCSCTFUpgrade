@@ -37,14 +37,14 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
 
 
     //trk
-    t_->Branch("trkPt_bit",       &evSummary_.trkPt_bit,           "trkPt_bit/I");
-    t_->Branch("trkEta_bit",       &evSummary_.trkEta_bit,           "trkEta_bit/F");
-    t_->Branch("trkPhi_bit",       &evSummary_.trkPhi_bit,           "trkPhi_bit/F");
-    t_->Branch("trkMode",       &evSummary_.trkMode,           "trkMode/L");
-    t_->Branch("trkCharge",       &evSummary_.trkCharge,           "trkCharge/I");
-    t_->Branch("trkPt",       &evSummary_.trkPt,           "trkPt/F");
-    t_->Branch("trkEta",       &evSummary_.trkEta,           "trkEta/D");
-    t_->Branch("trkPhi",       &evSummary_.trkPhi,           "trkPhi/D");
+    t_->Branch("trkPt_bit",        evSummary_.trkPt_bit,           "trkPt_bit/I");
+    t_->Branch("trkEta_bit",       evSummary_.trkEta_bit,           "trkEta_bit/F");
+    t_->Branch("trkPhi_bit",       evSummary_.trkPhi_bit,           "trkPhi_bit/F");
+    t_->Branch("trkMode",       evSummary_.trkMode,           "trkMode/L");
+    t_->Branch("trkCharge",       evSummary_.trkCharge,           "trkCharge/I");
+    t_->Branch("trkPt",        evSummary_.trkPt,           "trkPt/F");
+    t_->Branch("trkEta",       evSummary_.trkEta,           "trkEta/D");
+    t_->Branch("trkPhi",       evSummary_.trkPhi,           "trkPhi/D");
 
 
     //csc
