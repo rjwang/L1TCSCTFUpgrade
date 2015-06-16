@@ -90,6 +90,8 @@
 #include <vector>
 #include <unistd.h>
 
+#include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/SelectionMonitor.h"
+#include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/TSelectionMonitor.h"
 #include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/DataEvtSummaryHandler.h"
 #include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/PtAddress.h"
 //
