@@ -76,8 +76,10 @@
 #include "CondFormats/DataRecord/interface/L1MuTriggerPtScaleRcd.h"
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigiCollection.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
 
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 
 #include "TMath.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -89,6 +91,7 @@
 #include <unistd.h>
 
 #include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/DataEvtSummaryHandler.h"
+#include "L1TCSCTFUpgrade/RPCInclusionAnalyzer/interface/PtAddress.h"
 //
 // class declaration
 //
@@ -109,9 +112,11 @@ private:
     int calcPhiBits(float GblPhi, int sector);
     int calcEtaBits(float GblEta);
     int sectorRPC2CSC(float rpcphi);
+    int scaling(double a);
 
     bool isMC_;
     edm::InputTag RPCTPTag_, CSCTFTag_;
+    edm::ParameterSet LUTparam_;
     DataEvtSummaryHandler summaryHandler_;
 
     // Needed for CSCTF LUTs
@@ -162,6 +167,7 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
+    LUTparam_      = iConfig.getParameter<edm::ParameterSet>("lutParam");
 
 
     bzero(srLUTs_ , sizeof(srLUTs_));
@@ -249,7 +255,6 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
     ptScale = ptscales.product();
 
 //    cout << "\n\n=============== NEW EVENTS ============" << endl;
-
     vector<int> cluster_types;
     vector<int> cluster_regions,cluster_rings,cluster_stations,cluster_sectors,cluster_layers,cluster_subsectors,cluster_rolls,cluster_nhits;
     vector<float> cluster_phis, cluster_etas;
@@ -268,6 +273,8 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
         int layer 	= rpc->getRPCData().layer;
         int subsector  = rpc_id.subsector();
         int roll       = rpc_id.roll();
+
+        if(region==0) continue; //remove barrel hit
 
         int type=0;
         type += roll*1E0;
@@ -338,8 +345,10 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
 
 
+    cout << "\n\n====================== CSCTF Track ==================" << endl;
 
     ev.csctrk=0;
+    ev.csclct=0;
     for(auto csctftrk = CSCTFTracks->cbegin(); csctftrk < CSCTFTracks->cend(); csctftrk++) {
 
         // Access the track variables in bit form
@@ -356,21 +365,20 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
         // Write variables to tree
         ev.trkPt_bit[ev.csctrk] = trkPt_bit;
-	ev.trkEta_bit[ev.csctrk] = trkEta_bit;
-	ev.trkPhi_bit[ev.csctrk] = trkPhi_bit;
-	ev.trkMode[ev.csctrk] = trkMode;
-	ev.trkCharge[ev.csctrk] = trkCharge;
-	ev.trkPt[ev.csctrk] = trkPt;
-	ev.trkEta[ev.csctrk] = trkEta;
-	ev.trkPhi[ev.csctrk] = trkPhi;
+        ev.trkEta_bit[ev.csctrk] = trkEta_bit;
+        ev.trkPhi_bit[ev.csctrk] = trkPhi_bit;
+        ev.trkMode[ev.csctrk] = trkMode;
+        ev.trkCharge[ev.csctrk] = trkCharge;
+        ev.trkPt[ev.csctrk] = trkPt;
+        ev.trkEta[ev.csctrk] = trkEta;
+        ev.trkPhi[ev.csctrk] = trkPhi;
 
-        cout << "\n\n====================== CSCTF Track ==================" << endl;
         cout << "trkPt_bit: " << trkPt_bit
              << " trkEta_bit: " << trkEta_bit
              << " trkPhi_bit: " << trkPhi_bit
              << " trkMode: " << trkMode
-             << " trkCharge: " << trkCharge << endl;
-        cout << "trk Pt: " << trkPt
+             << " trkCharge: " << trkCharge
+             <<  "trk Pt: " << trkPt
              << " trk Eta: " << trkEta
              << " trk Phi: " << trkPhi
              << endl;
@@ -384,7 +392,6 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             auto x_LCTs = lct_map[id];
 
             // Loop over lcts in each station
-            ev.csclct=0;
             for ( auto t_lcts = x_LCTs.cbegin(); t_lcts != x_LCTs.cend(); t_lcts++ ) {
 
                 auto lcts = *t_lcts; // dereference the edm:Ref object
@@ -398,7 +405,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 auto trlct_ring          = id.ring();
                 double trlct_phi         = lcts->getCMSGlobalPhi();
                 double trlct_eta         = lcts->getCMSGlobalEta();
-                //uint16_t trlct_bx        = lcts->getCSCData().bx;
+                uint16_t trlct_bx        = lcts->getCSCData().bx;
                 int trlct_sector         = CSCTriggerNumbering::triggerSectorFromLabels(id)-1;
                 int trlct_subsector      = CSCTriggerNumbering::triggerSubSectorFromLabels(id);
                 //uint16_t trlct_bx0       = lcts->getCSCData().bx0;
@@ -435,18 +442,19 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 int trlct_etabit = calcEtaBits(trlct_eta);
 
 
-                ev.csc_lctstation[ev.csctrk][ev.csclct] = trlct_station;
-                ev.csc_lctendcap[ev.csctrk][ev.csclct] = trlct_endcap;
-                ev.csc_lctchamber[ev.csctrk][ev.csclct] = trlct_chamber;
-                ev.csc_lctring[ev.csctrk][ev.csclct] = trlct_ring;
-                ev.csc_lctsector[ev.csctrk][ev.csclct] = trlct_sector;
-                ev.csc_lctsubsector[ev.csctrk][ev.csclct] = trlct_subsector;
-                ev.csc_lctcscID[ev.csctrk][ev.csclct] = trlct_cscID;
-                ev.csc_lctphibit[ev.csctrk][ev.csclct] = trlct_phibit;
-                ev.csc_lctetabit[ev.csctrk][ev.csclct] = trlct_etabit;
+                ev.csc_lctnthtrk[ev.csclct] = ev.csctrk;
+                ev.csc_lctstation[ev.csclct] = trlct_station;
+                ev.csc_lctendcap[ev.csclct] = trlct_endcap;
+                ev.csc_lctchamber[ev.csclct] = trlct_chamber;
+                ev.csc_lctring[ev.csclct] = trlct_ring;
+                ev.csc_lctsector[ev.csclct] = trlct_sector;
+                ev.csc_lctsubsector[ev.csclct] = trlct_subsector;
+                ev.csc_lctcscID[ev.csclct] = trlct_cscID;
+                ev.csc_lctphibit[ev.csclct] = trlct_phibit;
+                ev.csc_lctetabit[ev.csclct] = trlct_etabit;
 
-                ev.csc_lctphi[ev.csctrk][ev.csclct] = trlct_phi;
-                ev.csc_lcteta[ev.csctrk][ev.csclct] = trlct_eta;
+                ev.csc_lctphi[ev.csclct] = trlct_phi;
+                ev.csc_lcteta[ev.csclct] = trlct_eta;
 
 
                 // These are called global but are really CSCTF bits
@@ -457,18 +465,17 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 //if(trlct_endcap==0) etaG *=-1.;
                 //float phiG = fmod( gblPhi.global_phi*thePhiBinning+15.0*M_PI/180+(trlct_sector)*60.0*M_PI/180, 2.*M_PI );
 
-                /*
-                        cout << "phiG: " << phiG
-                             << " etaG: " << etaG
-                             << " trlct_phi: " << trlct_phi
-                             << " trlct_eta: " << trlct_eta
-                             << " trlct_endcap: " << trlct_endcap
-                             << " trlct_station: " << trlct_station
-                             << " trlct_ring: " << trlct_ring
-                             << " trlct_chamber: " << trlct_chamber
-                             << " trlct_sector: " << trlct_sector
-                             << endl;
-                */
+                cout << " LCTs "
+                     << " endcap: " << trlct_endcap
+                     << " station: " << trlct_station
+                     << " ring: " << trlct_ring
+                     << " chamber: " << trlct_chamber
+                     << " sector: " << trlct_sector
+                     << " eta: " << trlct_eta
+                     << " phi: " << trlct_phi
+                     << " bx: " << trlct_bx
+                     << endl;
+
 
                 ev.csclct++;
             } //lct END
@@ -484,11 +491,11 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
 
 
+    // PT assignment
 
-
-/*
     // rpc
     for(int rpc=0; rpc<ev.rpc; rpc++) {
+
         // csctrk
         for(int csctrk=0; csctrk<ev.csctrk; csctrk++) {
 
@@ -496,52 +503,90 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             std::vector<std::vector<int> > CSChits;
             CSChits.clear();
 
+            bool hasRPC(false);
+
+            // all lcts
             for(int csclct=0; csclct<ev.csclct; csclct++) {
+                if(ev.csc_lctnthtrk[csclct] != csctrk) continue;
+                if( !hasRPC && deltaR(ev.rpc_eta[rpc], ev.rpc_phi[rpc], ev.csc_lcteta[csclct], ev.csc_lctphi[csclct])<0.1) {
 
-                vector<int> cschit;
-                // fill hits vector with LCT variables
-                cschit.push_back(ev.csc_lctstation[csctrk][csclct]);
-                cschit.push_back(ev.csc_lctphibit[csctrk][csclct]);
-                cschit.push_back(ev.csc_lcteta[csctrk][csclct]);
-                cschit.push_back(ev.csc_lctsector[csctrk][csclct]);
-                cschit.push_back(ev.csc_lctsubsector[csctrk][csclct]);
-                cschit.push_back(ev.csc_lctcscID[csctrk][csclct]);
-                cschit.push_back(ev.csc_lctchamber[csctrk][csclct]);
+                    bool inSameEndCap(false);
+                    if(ev.csc_lctendcap[csclct]==1 && ev.rpc_region[rpc] ==1 ) inSameEndCap = true; // plus endcap
+                    else if(ev.csc_lctendcap[csclct]==0 && ev.rpc_region[rpc] == -1 ) inSameEndCap = true;// minus endcap
+                    if(!inSameEndCap) continue;
 
-                // Fill vector to be used in PtAddress.h
-                CSChits.push_back(cschit);
+                    vector<int> rpchits;
+                    // Fill vector to use in PtAddress.h
+                    rpchits.push_back(ev.csc_lctstation[csclct]);
+                    rpchits.push_back(ev.rpc_phibit[rpc]);
+                    rpchits.push_back(ev.csc_lcteta[csclct]);
+                    rpchits.push_back(ev.csc_lctsector[csclct]);
+                    rpchits.push_back(ev.csc_lctsubsector[csclct]);
+                    rpchits.push_back(ev.csc_lctcscID[csclct]);
+                    rpchits.push_back(ev.csc_lctchamber[csclct]);
+
+                    CSChits.push_back(rpchits);
+                    hasRPC = true;
+                    cout << "---------------------------------------" << endl;
+                    cout << "trk: " << ev.csc_lctnthtrk[csclct]
+                         << " lcteta: " << ev.csc_lcteta[csclct]
+                         << " lctphi: " << ev.csc_lctphi[csclct]
+                         << " lctendcap: " << ev.csc_lctendcap[csclct]
+                         << " lctstation: " << ev.csc_lctstation[csclct]
+                         << " lctring: " << ev.csc_lctring[csclct]
+                         << " lctchamber: " << ev.csc_lctchamber[csclct]
+                         << endl;
+
+                } else {
+
+                    vector<int> cschit;
+                    // fill hits vector with LCT variables
+                    cschit.push_back(ev.csc_lctstation[csclct]);
+                    cschit.push_back(ev.csc_lctphibit[csclct]);
+                    cschit.push_back(ev.csc_lcteta[csclct]);
+                    cschit.push_back(ev.csc_lctsector[csclct]);
+                    cschit.push_back(ev.csc_lctsubsector[csclct]);
+                    cschit.push_back(ev.csc_lctcscID[csclct]);
+                    cschit.push_back(ev.csc_lctchamber[csclct]);
+
+                    // Fill vector to be used in PtAddress.h
+                    CSChits.push_back(cschit);
+                }
+
+            } // END LCT
+
+            if(!hasRPC) continue;
+            if(CSChits.size()!=3) continue;
+
+            // Now swap out lct with matched rpc hit
+
+            ptadd address1 = getAddress1(CSChits);
+            ptadd address0 = getAddress0(CSChits);
+
+            CSCTFPtLUT lut = CSCTFPtLUT(LUTparam_, scale, ptScale);
+
+            cout << " rpc_phi: " << ev.rpc_phi[rpc]
+                 << " rpc_eta: " << ev.rpc_eta[rpc]
+                 << " rpc_region: " << ev.rpc_region[rpc]
+                 << " rpc_station: " << ev.rpc_station[rpc]
+                 << " rpc_ring: " << ev.rpc_ring[rpc]
+                 << " csctrk: " << ev.csctrk
+                 << endl;
 
 
+            cout << "      ----> Calculating pT with PtAddress.h" << endl;
+            cout << "       front scaled  = " << scaling(lut.PtReal(address1)) << endl;
+            cout << "       rear  scaled  = " << scaling(lut.PtReal(address0)) << endl;
+            cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;
 
 
-                vector<int> rpchits;
-                // Fill vector to use in PtAddress.h
-                rpchits.push_back(trlct_station);
-                rpchits.push_back(ev.rpc_phibit[rpc]);
-                rpchits.push_back(trlct_etaBits);
-                rpchits.push_back(trlct_sector);
-                rpchits.push_back(trlct_subsector);
-                rpchits.push_back(trlct_cscID);
-                rpchits.push_back(trlct_chamber);
+        } // track
 
-
-                // Now swap out lct with matched rpc hit
-                temp_cschits = csc_hits;
-                temp_cschits.at(iLct) = rpchits;
-
-                ptadd address1 = getAddress1(temp_cschits);
-                ptadd address0 = getAddress0(temp_cschits);
-
-            }
-        }
-    }
-*/
-
-
+    } //RPC
 
     summaryHandler_.fillTree();
-}
 
+}
 
 // ------------ method called once each job just before starting event loop  ------------
 void
@@ -619,8 +664,79 @@ RPCInclusionAnalyzer::sectorRPC2CSC(float rpcphi)
     else if (rpcphi >= -0.803 && rpcphi < 0.243)
         return 6;
     else
-	return -1;
+        return -1;
 }
+
+// pT scaling used with Matt's PtAddress.h
+int
+RPCInclusionAnalyzer::scaling(double a)//original pt scale
+{
+    if (a >= 0 && a < 1.5) {
+        a = 0.0;
+    } else if (a >= 1.5 && a < 2.0) {
+        a = 1.5;
+    } else if (a >= 2.0 && a < 2.5) {
+        a = 2.5;
+    } else if (a >= 2.5 && a < 3.0) {
+        a = 3.0;
+    } else if (a >= 3.0 && a < 3.5) {
+        a = 3.0;
+    } else if (a >= 3.5 && a < 4.0) {
+        a = 3.5;
+    } else if(a >= 4.0 && a < 4.5) {
+        a = 4.0;
+    } else if(a >= 4.5 && a < 5.0) {
+        a = 4.5;
+    } else if (a >= 5.0 && a < 6.0) {
+        a = 5.0;
+    } else if (a >= 6.0 && a < 7.0) {
+        a = 6.0;
+    } else if(a >= 7.0 && a < 8.0) {
+        a = 7.0;
+    } else if(a >= 8.0 && a < 10.0) {
+        a = 8.0;
+    } else if (a >= 10.0 && a < 12.0) {
+        a = 10.0;
+    } else if (a >= 12.0 && a < 14.0) {
+        a = 12.0;
+    } else if(a >= 14.0 && a < 16.0) {
+        a = 14.0;
+    } else if(a >= 16.0 && a < 18.0) {
+        a = 16.0;
+    } else if (a >= 18.0 && a < 20.0) {
+        a = 18.0;
+    } else if (a >= 20.0 && a < 25.0) {
+        a = 20.0;
+    } else if(a >= 25.0 && a < 30.0) {
+        a = 25.0;
+    } else if(a >= 30.0 && a < 35.0) {
+        a = 30.0;
+    } else if (a >= 35.0 && a < 40.0) {
+        a = 35.0;
+    } else if (a >= 40.0 && a < 45.0) {
+        a = 40.0;
+    } else if(a >= 45.0 && a < 50.0) {
+        a = 45.0;
+    } else if(a >= 50.0 && a < 60.0) {
+        a = 50.0;
+    } else if (a >= 60.0 && a < 70.0) {
+        a = 60.0;
+    } else if (a >= 70.0 && a < 80.0) {
+        a = 70.0;
+    } else if(a >= 80.0 && a < 90.0) {
+        a = 80.0;
+    } else if(a >= 90.0 && a < 100.0) {
+        a = 90.0;
+    } else if (a >= 100.0 && a < 120.0) {
+        a = 100.0;
+    } else if (a >= 120.0 && a < 140.0) {
+        a = 120.0;
+    } else if(a >= 140.0 && a < 1E6) {
+        a = 140.0;
+    }
+    return a;
+}
+
 // ------------ method called when starting to processes a run  ------------
 /*
 void

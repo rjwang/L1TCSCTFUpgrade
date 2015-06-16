@@ -34,6 +34,7 @@ struct DataEvtSummary_t {
     Float_t rpc_phi[MAXPARTICLES],rpc_eta[MAXPARTICLES];
 
     //trk
+    Int_t csctrk;
     Int_t trkPt_bit[MAXPARTICLES];
     Float_t trkEta_bit[MAXPARTICLES];
     Float_t trkPhi_bit[MAXPARTICLES];
@@ -44,22 +45,19 @@ struct DataEvtSummary_t {
     Double_t trkPhi[MAXPARTICLES];
 
     //csc
-    Int_t csctrk, csclct;
-
-    Int_t csc_lctstation[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctendcap[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctchamber[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctring[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctsector[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctsubsector[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctcscID[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctphibit[MAXPARTICLES][MAXPARTICLES];
-    Int_t csc_lctetabit[MAXPARTICLES][MAXPARTICLES];
-
-
-
-    Float_t csc_lctphi[MAXPARTICLES][MAXPARTICLES];
-    Float_t csc_lcteta[MAXPARTICLES][MAXPARTICLES];
+    Int_t csclct;
+    Int_t csc_lctnthtrk[MAXPARTICLES];
+    Int_t csc_lctstation[MAXPARTICLES];
+    Int_t csc_lctendcap[MAXPARTICLES];
+    Int_t csc_lctchamber[MAXPARTICLES];
+    Int_t csc_lctring[MAXPARTICLES];
+    Int_t csc_lctsector[MAXPARTICLES];
+    Int_t csc_lctsubsector[MAXPARTICLES];
+    Int_t csc_lctcscID[MAXPARTICLES];
+    Int_t csc_lctphibit[MAXPARTICLES];
+    Int_t csc_lctetabit[MAXPARTICLES];
+    Float_t csc_lctphi[MAXPARTICLES];
+    Float_t csc_lcteta[MAXPARTICLES];
 
 
 
