@@ -335,6 +335,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
         ev.rpc_sector[ev.rpc] = cluster_sectors[nrpc];
         ev.rpc_cscsector[ev.rpc] = sectorRPC2CSC(ev.rpc_phi[ev.rpc]);
         ev.rpc_phibit[ev.rpc] = calcPhiBits(ev.rpc_phi[ev.rpc],ev.rpc_cscsector[ev.rpc]);
+	ev.rpc_etabit[ev.rpc] = calcEtaBits(ev.rpc_eta[ev.rpc]);
         ev.rpc_subsector[ev.rpc] = cluster_subsectors[nrpc];
         ev.rpc_ring[ev.rpc] = cluster_rings[nrpc];
         ev.rpc_layer[ev.rpc] = cluster_layers[nrpc];
@@ -521,7 +522,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                     // Fill vector to use in PtAddress.h
                     rpchits.push_back(ev.csc_lctstation[csclct]);
                     rpchits.push_back(ev.rpc_phibit[rpc]);
-                    rpchits.push_back(ev.csc_lcteta[csclct]);
+                    rpchits.push_back(ev.rpc_etabit[rpc]);
                     rpchits.push_back(ev.csc_lctsector[csclct]);
                     rpchits.push_back(ev.csc_lctsubsector[csclct]);
                     rpchits.push_back(ev.csc_lctcscID[csclct]);
@@ -545,7 +546,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                     // fill hits vector with LCT variables
                     cschit.push_back(ev.csc_lctstation[csclct]);
                     cschit.push_back(ev.csc_lctphibit[csclct]);
-                    cschit.push_back(ev.csc_lcteta[csclct]);
+                    cschit.push_back(ev.csc_lctetabit[csclct]);
                     cschit.push_back(ev.csc_lctsector[csclct]);
                     cschit.push_back(ev.csc_lctsubsector[csclct]);
                     cschit.push_back(ev.csc_lctcscID[csclct]);

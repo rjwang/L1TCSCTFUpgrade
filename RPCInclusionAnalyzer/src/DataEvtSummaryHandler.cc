@@ -26,6 +26,7 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
     t_->Branch("rpc_sector",    evSummary_.rpc_sector,                     "rpc_sector[rpc]/I");
     t_->Branch("rpc_cscsector",    evSummary_.rpc_cscsector,                   "rpc_cscsector[rpc]/I");
     t_->Branch("rpc_phibit",    evSummary_.rpc_phibit,                   "rpc_phibit[rpc]/I");
+    t_->Branch("rpc_etabit",    evSummary_.rpc_etabit,                   "rpc_etabit[rpc]/I");
     t_->Branch("rpc_subsector",	evSummary_.rpc_subsector,                     "rpc_subsector[rpc]/I");
     t_->Branch("rpc_ring",      evSummary_.rpc_ring,                     "rpc_ring[rpc]/I");
     t_->Branch("rpc_layer",     evSummary_.rpc_layer,                     "rpc_layer[rpc]/I");
@@ -94,6 +95,7 @@ bool DataEvtSummaryHandler::attachToTree(TTree *t)
     t_->SetBranchAddress("rpc_sector",           evSummary_.rpc_sector);
     t_->SetBranchAddress("rpc_cscsector",           evSummary_.rpc_cscsector);
     t_->SetBranchAddress("rpc_phibit",           evSummary_.rpc_phibit);
+    t_->SetBranchAddress("rpc_etabit",           evSummary_.rpc_etabit);
     t_->SetBranchAddress("rpc_subsector",           evSummary_.rpc_subsector);
     t_->SetBranchAddress("rpc_ring",           evSummary_.rpc_ring);
     t_->SetBranchAddress("rpc_layer",           evSummary_.rpc_layer);
