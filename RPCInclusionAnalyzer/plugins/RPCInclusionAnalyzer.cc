@@ -120,6 +120,7 @@ private:
     edm::InputTag RPCTPTag_, CSCTFTag_;
     edm::ParameterSet LUTparam_;
     DataEvtSummaryHandler summaryHandler_;
+    TSelectionMonitor controlHistos_;
 
     // Needed for CSCTF LUTs
     CSCSectorReceiverLUT* srLUTs_[5][2];
@@ -159,13 +160,20 @@ private:
 // constructors and destructor
 //
 RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
-    isMC_(              iConfig.getParameter<bool>("isMC"))
-
+    isMC_(              iConfig.getParameter<bool>("isMC")),
+    controlHistos_(     iConfig.getParameter<std::string>("dtag"))
 {
     //now do what ever initialization is needed
     edm::Service<TFileService> fs;
     summaryHandler_.initTree(  fs->make<TTree>("data","Event Summary") );
     TFileDirectory baseDir=fs->mkdir(iConfig.getParameter<std::string>("dtag"));
+
+    controlHistos_.addHistogram("nevents",";nevents; nevents",1,-0.5,0.5);
+
+    controlHistos_.addHistogram("deltaR",";#Delta R; Event",500,0.,0.5);
+    controlHistos_.addHistogram("dpt_front",";#it{p}_{T} (Front) - #it{p}_{T} (Track); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track); Events",100,0.,100.);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -227,6 +235,8 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 {
     using namespace edm;
     using namespace std;
+
+    controlHistos_.fillHisto("nevents","all",0);
 
     summaryHandler_.resetStruct();
     //event summary to be filled
@@ -507,11 +517,18 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             CSChits.clear();
 
             bool hasRPC(false);
+	    hasRPC = true; // always use CSC hits, double-check PT assignment
+
 
             // all lcts
             for(int csclct=0; csclct<ev.csclct; csclct++) {
                 if(ev.csc_lctnthtrk[csclct] != csctrk) continue;
-                if( !hasRPC && deltaR(ev.rpc_eta[rpc], ev.rpc_phi[rpc], ev.csc_lcteta[csclct], ev.csc_lctphi[csclct])<0.1) {
+
+		    double dR_RPC_CSC = deltaR(ev.rpc_eta[rpc], ev.rpc_phi[rpc], ev.csc_lcteta[csclct], ev.csc_lctphi[csclct]);
+		    controlHistos_.fillHisto("deltaR","all",dR_RPC_CSC);
+
+
+                if( !hasRPC && dR_RPC_CSC<0.05) {
 
                     bool inSameEndCap(false);
                     if(ev.csc_lctendcap[csclct]==1 && ev.rpc_region[rpc] ==1 ) inSameEndCap = true; // plus endcap
@@ -561,13 +578,18 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             if(!hasRPC) continue;
             if(CSChits.size()!=3) continue;
 
+	    cout << "station: " << CSChits[0][0]
+	    	<< " " << CSChits[0][1]
+	    	<< " " << CSChits[0][2]
+		<< endl;
+
             // Now swap out lct with matched rpc hit
 
             ptadd address1 = getAddress1(CSChits);
             ptadd address0 = getAddress0(CSChits);
 
             CSCTFPtLUT lut = CSCTFPtLUT(LUTparam_, scale, ptScale);
-
+/*
             cout << " rpc_phi: " << ev.rpc_phi[rpc]
                  << " rpc_eta: " << ev.rpc_eta[rpc]
                  << " rpc_region: " << ev.rpc_region[rpc]
@@ -575,13 +597,23 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                  << " rpc_ring: " << ev.rpc_ring[rpc]
                  << " csctrk: " << ev.csctrk
                  << endl;
+*/
 
+
+	    float pt_front = scaling(lut.PtReal(address1));
+	    float pt_rear = scaling(lut.PtReal(address0));
 
             cout << "      ----> Calculating pT with PtAddress.h" << endl;
-            cout << "       front scaled  = " << scaling(lut.PtReal(address1)) << endl;
-            cout << "       rear  scaled  = " << scaling(lut.PtReal(address0)) << endl;
+            cout << "       front scaled  = " << pt_front << " dpt: " << pt_front - ev.trkPt[csctrk] << endl;
+            cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
             cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;
 
+	    controlHistos_.fillHisto("dpt_front","all", pt_front - ev.trkPt[csctrk]);
+	    controlHistos_.fillHisto("dpt_rear","all",  pt_rear  - ev.trkPt[csctrk]);
+	    int minpt = abs(pt_front - ev.trkPt[csctrk]);
+	    int minpt_rear = abs(pt_rear - ev.trkPt[csctrk]);
+	    if(minpt_rear<minpt) minpt = minpt_rear;
+	    controlHistos_.fillHisto("dpt","all",minpt);
 
         } // track
 
