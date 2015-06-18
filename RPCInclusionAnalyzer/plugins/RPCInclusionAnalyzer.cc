@@ -174,6 +174,8 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dpt_front",";#it{p}_{T} (Front) - #it{p}_{T} (Track); Events",300,-150.,150.);
     controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track); Events",300,-150.,150.);
     controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track); Events",100,0.,100.);
+    controlHistos_.addHistogram("dpt_rpc",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
+    controlHistos_.addHistogram("rpc_matches",";RPC Station; Events",4,0,4);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -517,10 +519,60 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             CSChits.clear();
 
             bool hasRPC(false);
-	    hasRPC = true; // always use CSC hits, double-check PT assignment
+	    bool rear_address(false);
+	    //hasRPC = true; // always use CSC hits, double-check PT assignment
 
+	    //Getting the CSC hits w/o RPC info
+	    for (int csclct = 0; csclct < ev.csclct; csclct++){
+		    vector<int> cschit;
+                    // fill hits vector with LCT variables
+                    cschit.push_back(ev.csc_lctstation[csclct]);
+                    cschit.push_back(ev.csc_lctphibit[csclct]);
+                    cschit.push_back(ev.csc_lctetabit[csclct]);
+                    cschit.push_back(ev.csc_lctsector[csclct]);
+                    cschit.push_back(ev.csc_lctsubsector[csclct]);
+                    cschit.push_back(ev.csc_lctcscID[csclct]);
+                    cschit.push_back(ev.csc_lctchamber[csclct]);
+                    
+                    // Fill vector to be used in PtAddress.h
+                    CSChits.push_back(cschit);
+	    }
+
+	    if(CSChits.size()!=3) continue;
+
+            if (!(CSChits[0][0] == 1 && CSChits[1][0] == 2 && CSChits[2][0] == 3)) continue;
+
+	    cout << "station: " << CSChits[0][0]
+                << " " << CSChits[1][0]
+                << " " << CSChits[2][0]
+                << endl;
+
+	    ptadd address1 = getAddress1(CSChits);
+            ptadd address0 = getAddress0(CSChits);
+
+            CSCTFPtLUT lut = CSCTFPtLUT(LUTparam_, scale, ptScale);
+	    float pt_front = scaling(lut.PtReal(address1));
+            float pt_rear = scaling(lut.PtReal(address0));
+
+	    cout << "      ----> Calculating pT with PtAddress.h" << endl;
+            cout << "       front scaled  = " << pt_front << " dpt: " << pt_front - ev.trkPt[csctrk] << endl;
+            cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
+            cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;
+
+            controlHistos_.fillHisto("dpt_front","all", pt_front - ev.trkPt[csctrk]);
+            controlHistos_.fillHisto("dpt_rear","all",  pt_rear  - ev.trkPt[csctrk]);
+            int minpt = abs(pt_front - ev.trkPt[csctrk]);
+            int minpt_rear = abs(pt_rear - ev.trkPt[csctrk]);
+            if (minpt_rear < minpt){
+		 minpt = minpt_rear;
+		 rear_address = true;
+	    }
+            controlHistos_.fillHisto("dpt","all",minpt);
+
+	    CSChits.clear();
 
             // all lcts
+            // now replace one hit w/ rpc hit
             for(int csclct=0; csclct<ev.csclct; csclct++) {
                 if(ev.csc_lctnthtrk[csclct] != csctrk) continue;
 
@@ -528,7 +580,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 		    controlHistos_.fillHisto("deltaR","all",dR_RPC_CSC);
 
 
-                if( !hasRPC && dR_RPC_CSC<0.05) {
+                if( !hasRPC && dR_RPC_CSC<0.05 && ev.csc_lctstation[csclct] == 2) {
 
                     bool inSameEndCap(false);
                     if(ev.csc_lctendcap[csclct]==1 && ev.rpc_region[rpc] ==1 ) inSameEndCap = true; // plus endcap
@@ -537,7 +589,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
                     vector<int> rpchits;
                     // Fill vector to use in PtAddress.h
-                    rpchits.push_back(ev.csc_lctstation[csclct]);
+                    rpchits.push_back(ev.rpc_station[rpc]);
                     rpchits.push_back(ev.rpc_phibit[rpc]);
                     rpchits.push_back(ev.rpc_etabit[rpc]);
                     rpchits.push_back(ev.csc_lctsector[csclct]);
@@ -556,6 +608,8 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                          << " lctring: " << ev.csc_lctring[csclct]
                          << " lctchamber: " << ev.csc_lctchamber[csclct]
                          << endl;
+
+		    controlHistos_.fillHisto("rpc_matches","all", ev.rpc_station[rpc]-1);
 
                 } else {
 
@@ -576,19 +630,11 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             } // END LCT
 
             if(!hasRPC) continue;
-            if(CSChits.size()!=3) continue;
-
-	    cout << "station: " << CSChits[0][0]
-	    	<< " " << CSChits[0][1]
-	    	<< " " << CSChits[0][2]
-		<< endl;
 
             // Now swap out lct with matched rpc hit
 
-            ptadd address1 = getAddress1(CSChits);
-            ptadd address0 = getAddress0(CSChits);
-
-            CSCTFPtLUT lut = CSCTFPtLUT(LUTparam_, scale, ptScale);
+            ptadd address1_rpc = getAddress1(CSChits);
+            ptadd address0_rpc = getAddress0(CSChits);
 /*
             cout << " rpc_phi: " << ev.rpc_phi[rpc]
                  << " rpc_eta: " << ev.rpc_eta[rpc]
@@ -600,20 +646,20 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 */
 
 
-	    float pt_front = scaling(lut.PtReal(address1));
-	    float pt_rear = scaling(lut.PtReal(address0));
+	    float pt_front_rpc = scaling(lut.PtReal(address1_rpc));
+	    float pt_rear_rpc = scaling(lut.PtReal(address0_rpc));
 
-            cout << "      ----> Calculating pT with PtAddress.h" << endl;
+            /*cout << "      ----> Calculating pT with PtAddress.h" << endl;
             cout << "       front scaled  = " << pt_front << " dpt: " << pt_front - ev.trkPt[csctrk] << endl;
             cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
-            cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;
+            cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;*/
 
-	    controlHistos_.fillHisto("dpt_front","all", pt_front - ev.trkPt[csctrk]);
-	    controlHistos_.fillHisto("dpt_rear","all",  pt_rear  - ev.trkPt[csctrk]);
-	    int minpt = abs(pt_front - ev.trkPt[csctrk]);
-	    int minpt_rear = abs(pt_rear - ev.trkPt[csctrk]);
-	    if(minpt_rear<minpt) minpt = minpt_rear;
-	    controlHistos_.fillHisto("dpt","all",minpt);
+	    if (rear_address){
+	    	controlHistos_.fillHisto("dpt_rpc","all", pt_rear - pt_rear_rpc);
+	    }
+	    else {
+		controlHistos_.fillHisto("dpt_rpc","all", pt_front - pt_front_rpc);
+	    }
 
         } // track
 
