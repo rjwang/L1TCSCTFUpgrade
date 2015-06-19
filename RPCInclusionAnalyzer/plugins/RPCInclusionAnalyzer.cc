@@ -175,6 +175,9 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track); Events",300,-150.,150.);
     controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track); Events",100,0.,100.);
     controlHistos_.addHistogram("dpt_rpc",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt_rpc_station1","#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt_rpc_station2","#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt_rpc_station3","#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
     controlHistos_.addHistogram("rpc_matches",";RPC Station; Events",4,0,4);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
@@ -654,11 +657,28 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
             cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;*/
 
+	    float dpt;
+
 	    if (rear_address){
-	    	controlHistos_.fillHisto("dpt_rpc","all", pt_rear - pt_rear_rpc);
+	    	dpt = pt_rear - pt_rear_rpc;
 	    }
 	    else {
-		controlHistos_.fillHisto("dpt_rpc","all", pt_front - pt_front_rpc);
+		dpt = pt_front - pt_front_rpc;
+	    }
+
+	    controlHistos_.fillHisto("dpt_rpc","all", dpt);
+
+	    switch (ev.rpc_station[rpc]){
+
+                        case 1:
+                                controlHistos_.fillHisto("dpt_rpc_station1","all",dpt);
+				break;
+			case 2:
+				controlHistos_.fillHisto("dpt_rpc_station2","all",dpt);
+				break;
+			case 3:
+				controlHistos_.fillHisto("dpt_rpc_station3","all",dpt);
+				break;
 	    }
 
         } // track
