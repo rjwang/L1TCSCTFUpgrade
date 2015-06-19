@@ -171,14 +171,36 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("nevents",";nevents; nevents",1,-0.5,0.5);
 
     controlHistos_.addHistogram("deltaR",";#Delta R; Event",500,0.,0.5);
+
+    //Histograms of changes in pT
     controlHistos_.addHistogram("dpt_front",";#it{p}_{T} (Front) - #it{p}_{T} (Track); Events",300,-150.,150.);
     controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track); Events",300,-150.,150.);
     controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track); Events",100,0.,100.);
     controlHistos_.addHistogram("dpt_rpc",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dpt_rpc_station1",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dpt_rpc_station2",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dpt_rpc_station3",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_dpt",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added);CSC2 - RPC Cluster",300,-150.,150.,300,-.1,.1);
+
     controlHistos_.addHistogram("rpc_matches",";RPC Station; Events",4,0,4);
+
+    //1D Histograms of dphi distributions
+    controlHistos_.addHistogram("dphi_csc1_csc2_all",";CSC2 - CSC1; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_csc1_csc2",";CSC2 - CSC1; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_csc1_rpc2",";RPC Cluster - CSC1; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_rpc2_csc3",";CSC3 - RPC Cluster; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_rpc2_csc2",";CSC2 - RPC Cluster; Events",300,-0.1,0.1);
+
+    //2D Histograms of dphi vs pT
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T};CSC2 - CSC1",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt",";#it{p}_{T};CSC2 - CSC1",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_pt",";#it{p}_{T};RPC Cluster - CSC1",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T};CSC2 - RPC Cluster",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T};CSC3 - RPC Cluster",140,0,140,3000,-.2,.2);
+
+    //2D Histograms of dphi vs 1/pT
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T};CSC2 - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T};CSC2 - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_invpt",";1 / #it{p}_{T};RPC Cluster - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_invpt",";1 / #it{p}_{T};CSC2 - RPC Cluster",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_invpt",";1 / #it{p}_{T};CSC3 - RPC Cluster",140,0,.4,3000,-.2,.2);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -550,6 +572,9 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                  << " " << CSChits[2][0]
                  << endl;
 
+	    double dphi12_all = ev.csc_lctphi[1] - ev.csc_lctphi[0];
+	    double dphi12, dphi12_rpc, dphi22_rpc, dphi23_rpc;
+
             ptadd address1 = getAddress1(CSChits);
             ptadd address0 = getAddress0(CSChits);
 
@@ -571,6 +596,15 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 rear_address = true;
             }
             controlHistos_.fillHisto("dpt","all",minpt);
+	    controlHistos_.fillHisto("dphi_csc1_csc2_all","all",dphi12_all);
+	    if (rear_address){
+		controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_rear,dphi12_all);
+		controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_rear,dphi12_all);
+	    }
+	    else {
+		controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_front,dphi12_all);
+		controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_front,dphi12_all);
+	    }
 
             CSChits.clear();
 
@@ -583,7 +617,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 controlHistos_.fillHisto("deltaR","all",dR_RPC_CSC);
 
 
-                if( !hasRPC && dR_RPC_CSC<0.05 && ev.csc_lctstation[csclct] == 2) {
+                if( !hasRPC && dR_RPC_CSC<0.05 && ev.csc_lctstation[csclct] == 2 && ev.rpc_station[rpc] == 2) {
 
                     bool inSameEndCap(false);
                     if(ev.csc_lctendcap[csclct]==1 && ev.rpc_region[rpc] ==1 ) inSameEndCap = true; // plus endcap
@@ -614,6 +648,10 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
                     controlHistos_.fillHisto("rpc_matches","all", ev.rpc_station[rpc]-1);
 
+//		    dphi12_rpc = ev.rpc_phi[rpc] - ev.csc_lctphi[0];
+
+//		    controlHistos_.fillHisto("dphi12_rpc","all",dphi12_rpc);
+
                 } else {
 
                     vector<int> cschit;
@@ -635,6 +673,15 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             if(!hasRPC) continue;
 
             // Now swap out lct with matched rpc hit
+            dphi12 = ev.csc_lctphi[1] - ev.csc_lctphi[0];
+	    dphi12_rpc = ev.rpc_phi[rpc] - ev.csc_lctphi[0];
+	    dphi22_rpc = ev.csc_lctphi[1] - ev.rpc_phi[rpc];
+	    dphi23_rpc = ev.csc_lctphi[2] - ev.rpc_phi[rpc];
+
+	    controlHistos_.fillHisto("dphi_csc1_csc2","all",dphi12);
+	    controlHistos_.fillHisto("dphi_csc1_rpc2","all",dphi12_rpc);
+	    controlHistos_.fillHisto("dphi_rpc2_csc2","all",dphi22_rpc);
+	    controlHistos_.fillHisto("dphi_rpc2_csc3","all",dphi23_rpc);
 
             ptadd address1_rpc = getAddress1(CSChits);
             ptadd address0_rpc = getAddress0(CSChits);
@@ -661,23 +708,28 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
             if (rear_address) {
                 dpt = pt_rear - pt_rear_rpc;
+		controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_rear,dphi12);
+		controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_rear_rpc,dphi12_rpc);
+		controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_rear_rpc,dphi22_rpc);
+		controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_rear_rpc,dphi23_rpc);
+		controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_rear,dphi12);
+		controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_rear_rpc,dphi12_rpc);
+		controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi22_rpc);
+		controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi23_rpc);
             } else {
                 dpt = pt_front - pt_front_rpc;
+		controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_front,dphi12);
+                controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_front_rpc,dphi12_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_front_rpc,dphi22_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_front_rpc,dphi23_rpc);
+                controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_front,dphi12);
+                controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_front_rpc,dphi12_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_front_rpc,dphi22_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc3_invpt","all",1.0/pt_front_rpc,dphi23_rpc);
             }
 
             controlHistos_.fillHisto("dpt_rpc","all", dpt);
-
-            switch (ev.rpc_station[rpc]) {
-            case 1:
-                controlHistos_.fillHisto("dpt_rpc_station1","all",dpt);
-                break;
-            case 2:
-                controlHistos_.fillHisto("dpt_rpc_station2","all",dpt);
-                break;
-            case 3:
-                controlHistos_.fillHisto("dpt_rpc_station3","all",dpt);
-                break;
-            }
+	    controlHistos_.fillHisto("dphi_rpc2_csc2_dpt","all",dpt,dphi22_rpc);
 
         } // track
 
