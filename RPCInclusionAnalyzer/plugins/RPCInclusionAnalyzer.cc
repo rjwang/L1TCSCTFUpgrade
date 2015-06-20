@@ -85,6 +85,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -117,6 +119,7 @@ private:
     int scaling(double a);
 
     bool isMC_;
+    edm::InputTag GenParticles_;
     edm::InputTag RPCTPTag_, CSCTFTag_;
     edm::ParameterSet LUTparam_;
     DataEvtSummaryHandler summaryHandler_;
@@ -161,6 +164,7 @@ private:
 //
 RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     isMC_(              iConfig.getParameter<bool>("isMC")),
+    GenParticles_(	iConfig.getUntrackedParameter<edm::InputTag>("GenParticles")),
     controlHistos_(     iConfig.getParameter<std::string>("dtag"))
 {
     //now do what ever initialization is needed
@@ -182,11 +186,13 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("rpc_matches",";RPC Station; Events",4,0,4);
 
     //1D Histograms of dphi distributions
-    controlHistos_.addHistogram("dphi_csc1_csc2_all",";CSC2 - CSC1; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_csc1_csc2_all",";#Delta#phi(CSC2, CSC1); Events",300,-1,1);
     controlHistos_.addHistogram("dphi_csc1_csc2",";CSC2 - CSC1; Events",300,-1,1);
-    controlHistos_.addHistogram("dphi_csc1_rpc2",";RPC Cluster - CSC1; Events",300,-1,1);
-    controlHistos_.addHistogram("dphi_rpc2_csc3",";CSC3 - RPC Cluster; Events",300,-1,1);
-    controlHistos_.addHistogram("dphi_rpc2_csc2",";CSC2 - RPC Cluster; Events",300,-0.1,0.1);
+
+    //example
+    controlHistos_.addHistogram("dphi_csc1_rpc2",";#phi(CSC1) - #phi(RPC2) [rad]; Events",300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3",";#phi(RPC2) - #phi(CSC3) [rad]; Events",300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2",";#phi(RPC2) - #phi(CSC2) [rad]; Events",300,-0.2,0.2);
 
     //2D Histograms of dphi vs pT
     controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T};CSC2 - CSC1",140,0,140,300,-.2,.2);
@@ -262,6 +268,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 {
     using namespace edm;
     using namespace std;
+    using namespace reco;
 
     controlHistos_.fillHisto("nevents","all",0);
 
@@ -274,6 +281,34 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
     ev.run    = event.id().run();
     ev.lumi   = event.luminosityBlock();
     ev.event  = event.id().event();
+
+
+    //
+    // gen particles
+    //
+    edm::Handle< std::vector<reco::GenParticle> > genParticles;
+    event.getByLabel(GenParticles_, genParticles);
+    if(!genParticles.isValid())     cerr << "  WARNING: genParticles is not valid! " << endl;
+    else {
+        ev.nmcparticles = 0;
+        for(size_t i=0; i<genParticles->size(); i++) {
+            const Candidate * genParticle = &(*genParticles)[i];
+            int status=genParticle->status();
+            int pid=genParticle->pdgId();
+            if(status!=1 || abs(pid)!=13) continue; // PYTHIA 6 based
+
+            ev.mc_px[ev.nmcparticles] = genParticle->px();
+            ev.mc_py[ev.nmcparticles] = genParticle->py();
+            ev.mc_pz[ev.nmcparticles] = genParticle->pz();
+            ev.mc_en[ev.nmcparticles] = genParticle->energy();
+            ev.mc_id[ev.nmcparticles] = genParticle->pdgId();
+            ev.mc_mom[ev.nmcparticles] = 0;
+            ev.mc_status[ev.nmcparticles] = genParticle->status();
+
+            ev.nmcparticles++;
+
+        }
+    }
 
 
     Handle< vector<L1TMuon::TriggerPrimitive> > rpcs;
@@ -547,6 +582,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             bool rear_address(false);
             //hasRPC = true; // always use CSC hits, double-check PT assignment
 
+
             //Getting the CSC hits w/o RPC info
             for (int csclct = 0; csclct < ev.csclct; csclct++) {
                 vector<int> cschit;
@@ -565,15 +601,15 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
             if(CSChits.size()!=3) continue;
 
-            if (!(CSChits[0][0] == 1 && CSChits[1][0] == 2 && CSChits[2][0] == 3)) continue;
+            if(CSChits[0][0] != 1 || CSChits[1][0] != 2 || CSChits[2][0] != 3) continue;
 
             cout << "station: " << CSChits[0][0]
                  << " " << CSChits[1][0]
                  << " " << CSChits[2][0]
                  << endl;
 
-	    double dphi12_all = ev.csc_lctphi[1] - ev.csc_lctphi[0];
-	    double dphi12, dphi12_rpc, dphi22_rpc, dphi23_rpc;
+            double dphi12_all = ev.csc_lctphi[1] - ev.csc_lctphi[0];
+            double dphi12, dphi12_rpc, dphi22_rpc, dphi23_rpc;
 
             ptadd address1 = getAddress1(CSChits);
             ptadd address0 = getAddress0(CSChits);
@@ -596,15 +632,14 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 rear_address = true;
             }
             controlHistos_.fillHisto("dpt","all",minpt);
-	    controlHistos_.fillHisto("dphi_csc1_csc2_all","all",dphi12_all);
-	    if (rear_address){
-		controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_rear,dphi12_all);
-		controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_rear,dphi12_all);
-	    }
-	    else {
-		controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_front,dphi12_all);
-		controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_front,dphi12_all);
-	    }
+            controlHistos_.fillHisto("dphi_csc1_csc2_all","all",dphi12_all);
+            if (rear_address) {
+                controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_rear,dphi12_all);
+                controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_rear,dphi12_all);
+            } else {
+                controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_front,dphi12_all);
+                controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_front,dphi12_all);
+            }
 
             CSChits.clear();
 
@@ -674,14 +709,14 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
             // Now swap out lct with matched rpc hit
             dphi12 = ev.csc_lctphi[1] - ev.csc_lctphi[0];
-	    dphi12_rpc = ev.rpc_phi[rpc] - ev.csc_lctphi[0];
-	    dphi22_rpc = ev.csc_lctphi[1] - ev.rpc_phi[rpc];
-	    dphi23_rpc = ev.csc_lctphi[2] - ev.rpc_phi[rpc];
+            dphi12_rpc = - ev.rpc_phi[rpc] + ev.csc_lctphi[0];
+            dphi22_rpc = ev.csc_lctphi[1] - ev.rpc_phi[rpc];
+            dphi23_rpc = ev.csc_lctphi[2] - ev.rpc_phi[rpc];
 
-	    controlHistos_.fillHisto("dphi_csc1_csc2","all",dphi12);
-	    controlHistos_.fillHisto("dphi_csc1_rpc2","all",dphi12_rpc);
-	    controlHistos_.fillHisto("dphi_rpc2_csc2","all",dphi22_rpc);
-	    controlHistos_.fillHisto("dphi_rpc2_csc3","all",dphi23_rpc);
+            controlHistos_.fillHisto("dphi_csc1_csc2","all",dphi12);
+            controlHistos_.fillHisto("dphi_csc1_rpc2","all",dphi12_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc2","all",dphi22_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc3","all",dphi23_rpc);
 
             ptadd address1_rpc = getAddress1(CSChits);
             ptadd address0_rpc = getAddress0(CSChits);
@@ -708,17 +743,17 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
             if (rear_address) {
                 dpt = pt_rear - pt_rear_rpc;
-		controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_rear,dphi12);
-		controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_rear_rpc,dphi12_rpc);
-		controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_rear_rpc,dphi22_rpc);
-		controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_rear_rpc,dphi23_rpc);
-		controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_rear,dphi12);
-		controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_rear_rpc,dphi12_rpc);
-		controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi22_rpc);
-		controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi23_rpc);
+                controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_rear,dphi12);
+                controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_rear_rpc,dphi12_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_rear_rpc,dphi22_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_rear_rpc,dphi23_rpc);
+                controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_rear,dphi12);
+                controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_rear_rpc,dphi12_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi22_rpc);
+                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi23_rpc);
             } else {
                 dpt = pt_front - pt_front_rpc;
-		controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_front,dphi12);
+                controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_front,dphi12);
                 controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_front_rpc,dphi12_rpc);
                 controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_front_rpc,dphi22_rpc);
                 controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_front_rpc,dphi23_rpc);
@@ -729,7 +764,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             }
 
             controlHistos_.fillHisto("dpt_rpc","all", dpt);
-	    controlHistos_.fillHisto("dphi_rpc2_csc2_dpt","all",dpt,dphi22_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc2_dpt","all",dpt,dphi22_rpc);
 
         } // track
 

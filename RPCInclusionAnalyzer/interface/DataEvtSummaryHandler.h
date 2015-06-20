@@ -27,6 +27,12 @@ struct DataEvtSummary_t {
 
     Int_t run,lumi,event;
 
+    //gen level event
+    Int_t nmcparticles;
+    Float_t mc_px[MAXPARTICLES],mc_py[MAXPARTICLES],mc_pz[MAXPARTICLES],mc_en[MAXPARTICLES];
+    Int_t mc_id[MAXPARTICLES], mc_status[MAXPARTICLES], mc_mom[MAXPARTICLES];
+
+
     //rpc
     Int_t rpc;
     Int_t rpc_region[MAXPARTICLES],rpc_roll[MAXPARTICLES],rpc_nhits[MAXPARTICLES];

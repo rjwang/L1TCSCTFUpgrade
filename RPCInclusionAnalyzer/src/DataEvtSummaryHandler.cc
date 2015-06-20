@@ -19,6 +19,17 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
     t_->Branch("lumi",          &evSummary_.lumi,           "lumi/I");
     t_->Branch("event",         &evSummary_.event,          "event/I");
 
+
+    //mc truth
+    t_->Branch("nmcparticles",  &evSummary_.nmcparticles,   "nmcparticles/I");
+    t_->Branch("mc_px",         evSummary_.mc_px,           "mc_px[nmcparticles]/F");
+    t_->Branch("mc_py",         evSummary_.mc_py,           "mc_py[nmcparticles]/F");
+    t_->Branch("mc_pz",         evSummary_.mc_pz,           "mc_pz[nmcparticles]/F");
+    t_->Branch("mc_en",         evSummary_.mc_en,           "mc_en[nmcparticles]/F");
+    t_->Branch("mc_id",         evSummary_.mc_id,           "mc_id[nmcparticles]/I");
+    t_->Branch("mc_status",     evSummary_.mc_status,       "mc_status[nmcparticles]/I");
+    t_->Branch("mc_mom",        evSummary_.mc_mom,          "mc_mom[nmcparticles]/I");
+
     //rpc
     t_->Branch("rpc",           &evSummary_.rpc,             "rpc/I");
     t_->Branch("rpc_region",   evSummary_.rpc_region,                     "rpc_region[rpc]/I");

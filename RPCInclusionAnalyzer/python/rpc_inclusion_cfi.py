@@ -5,6 +5,7 @@ process = cms.Process('RPCInclusionAnalyzer')
 
 process.RPCInclusionAnalyzer = cms.EDAnalyzer('RPCInclusionAnalyzer',
 	dtag = cms.string('csctf'),
+	GenParticles = cms.untracked.InputTag("genParticles"),
 	RPCTPTag = cms.InputTag("L1TMuonTriggerPrimitives","RPC"),
 	CSCTFTag = cms.InputTag("L1CSCTFTrackConverter"),
 	lutParam     = cms.PSet(
