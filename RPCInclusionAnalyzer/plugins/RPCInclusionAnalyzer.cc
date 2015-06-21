@@ -177,36 +177,36 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("deltaR",";#Delta R; Event",500,0.,0.5);
 
     //Histograms of changes in pT
-    controlHistos_.addHistogram("dpt_front",";#it{p}_{T} (Front) - #it{p}_{T} (Track); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track); Events",100,0.,100.);
-    controlHistos_.addHistogram("dpt_rpc",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added); Events",300,-150.,150.);
-    controlHistos_.addHistogram("dphi_rpc2_csc2_dpt",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added);CSC2 - RPC Cluster",300,-150.,150.,300,-.1,.1);
+    controlHistos_.addHistogram("dpt_front",";#it{p}_{T} (Front) - #it{p}_{T} (Track) [GeV]; Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt_rear",";#it{p}_{T} (Rear) - #it{p}_{T} (Track) [GeV]; Events",300,-150.,150.);
+    controlHistos_.addHistogram("dpt",";#it{p}_{T} (Rear/Front) - #it{p}_{T} (Track) [GeV]; Events",100,0.,100.);
+    controlHistos_.addHistogram("dpt_rpc",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added) [GeV]; Events",300,-150.,150.);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_dpt",";#it{p}_{T} (CSC) - #it{p}_{T} (RPC Added) [GeV];#phi(CSC2) - #phi(RPC2) [rad]",300,-150.,150.,300,-.1,.1);
 
     controlHistos_.addHistogram("rpc_matches",";RPC Station; Events",4,0,4);
 
     //1D Histograms of dphi distributions
-    controlHistos_.addHistogram("dphi_csc1_csc2_all",";#Delta#phi(CSC2, CSC1); Events",300,-1,1);
-    controlHistos_.addHistogram("dphi_csc1_csc2",";CSC2 - CSC1; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_csc1_csc2_all",";#phi(CSC2) - #phi(CSC1) [rad]; Events",300,-1,1);
+    controlHistos_.addHistogram("dphi_csc1_csc2",";#phi(CSC2) - #phi(CSC1) [rad]; Events",300,-1,1);
 
     //example
-    controlHistos_.addHistogram("dphi_csc1_rpc2",";#phi(CSC1) - #phi(RPC2) [rad]; Events",300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc3",";#phi(RPC2) - #phi(CSC3) [rad]; Events",300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc2",";#phi(RPC2) - #phi(CSC2) [rad]; Events",300,-0.2,0.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2",";#phi(RPC2) - #phi(CSC1) [rad]; Events",300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3",";#phi(CSC3) - #phi(RPC2) [rad]; Events",300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2",";#phi(CSC2) - #phi(RPC2) [rad]; Events",300,-0.2,0.2);
 
     //2D Histograms of dphi vs pT
-    controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T};CSC2 - CSC1",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_csc2_pt",";#it{p}_{T};CSC2 - CSC1",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_rpc2_pt",";#it{p}_{T};RPC Cluster - CSC1",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T};CSC2 - RPC Cluster",140,0,140,3000,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T};CSC3 - RPC Cluster",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_pt",";#it{p}_{T} [GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T} [GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
 
     //2D Histograms of dphi vs 1/pT
-    controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T};CSC2 - CSC1",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T};CSC2 - CSC1",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_rpc2_invpt",";1 / #it{p}_{T};RPC Cluster - CSC1",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc2_invpt",";1 / #it{p}_{T};CSC2 - RPC Cluster",140,0,.4,3000,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc3_invpt",";1 / #it{p}_{T};CSC3 - RPC Cluster",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T} [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
