@@ -195,18 +195,32 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dphi_rpc2_csc2",";#phi(CSC2) - #phi(RPC2) [rad]; Events",300,-0.2,0.2);
 
     //2D Histograms of dphi vs pT
-    controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_csc2_pt",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_rpc2_pt",";#it{p}_{T} [GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T} [GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T} [GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt_all",";#it{p}_{T} (3 Hit Address) [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_pt",";#it{p}_{T} (3 Hit Address) [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_pt",";#it{p}_{T} (RPC Address) [GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T} (RPC Address) [GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T} (RPC Address) [GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
 
     //2D Histograms of dphi vs 1/pT
-    controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T} [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_csc1_rpc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc2_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
-    controlHistos_.addHistogram("dphi_rpc2_csc3_invpt",";1 / #it{p}_{T} [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T} (3 Hit Address) [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T} (3 Hit Address) [1/GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_invpt",";1 / #it{p}_{T} (RPC Address) [1/GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_invpt",";1 / #it{p}_{T} (RPC Address) [1/GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_invpt",";1 / #it{p}_{T} (RPC Address) [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+
+    //2D Histograms with gen pt
+    controlHistos_.addHistogram("dphi_csc1_csc2_genpt_all",";#it{p}_{T} (Gen) [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_genpt",";#it{p}_{T} (Gen) [GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_genpt",";#it{p}_{T} (Gen) [GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,140,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_genpt",";#it{p}_{T} (Gen) [GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_genpt",";#it{p}_{T} (Gen) [GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invgenpt_all",";1 / #it{p}_{T} (Gen) [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_csc2_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_csc1_rpc2_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(RPC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc2_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+    controlHistos_.addHistogram("dphi_rpc2_csc3_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
+
+    //Efficiency histograms
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -291,6 +305,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
     if(!genParticles.isValid())     cerr << "  WARNING: genParticles is not valid! " << endl;
     else {
         ev.nmcparticles = 0;
+
         for(size_t i=0; i<genParticles->size(); i++) {
             const Candidate * genParticle = &(*genParticles)[i];
             int status=genParticle->status();
@@ -305,8 +320,13 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             ev.mc_mom[ev.nmcparticles] = 0;
             ev.mc_status[ev.nmcparticles] = genParticle->status();
 
-            ev.nmcparticles++;
+	    LorentzVector genCandidate(ev.mc_px[ev.nmcparticles],ev.mc_py[ev.nmcparticles],ev.mc_pz[ev.nmcparticles],ev.mc_en[ev.nmcparticles]);
 
+	    ev.mc_phi[ev.nmcparticles] = genCandidate.Phi();
+	    ev.mc_eta[ev.nmcparticles] = genCandidate.Eta();
+	    ev.mc_pt[ev.nmcparticles] = genCandidate.Pt();
+
+            ev.nmcparticles++;
         }
     }
 
@@ -579,8 +599,22 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             CSChits.clear();
 
             bool hasRPC(false);
+	    bool hasGen(false);
             bool rear_address(false);
             //hasRPC = true; // always use CSC hits, double-check PT assignment
+            
+	    float mc_pt = -999.0,dR_Gen_Trk = 999.0;
+
+	    //Get gen info and check for matched tracks
+	    for (int mc = 0; mc < ev.nmcparticles; mc++){
+		float dR_Gen_Trk_temp = deltaR(ev.mc_phi[mc],ev.mc_eta[mc],ev.trkPhi[csctrk],ev.trkEta[csctrk]);
+		
+		if (dR_Gen_Trk_temp < .05 && dR_Gen_Trk_temp < dR_Gen_Trk){
+			dR_Gen_Trk = dR_Gen_Trk_temp;
+			mc_pt  = ev.mc_pt[mc];
+			hasGen = true;
+		}
+	    }
 
 
             //Getting the CSC hits w/o RPC info
@@ -599,8 +633,8 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
                 CSChits.push_back(cschit);
             }
 
+	    //Ignore tracks that aren't 3 hit with hits in 1-2-3
             if(CSChits.size()!=3) continue;
-
             if(CSChits[0][0] != 1 || CSChits[1][0] != 2 || CSChits[2][0] != 3) continue;
 
             cout << "station: " << CSChits[0][0]
@@ -611,18 +645,21 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             double dphi12_all = ev.csc_lctphi[1] - ev.csc_lctphi[0];
             double dphi12, dphi12_rpc, dphi22_rpc, dphi23_rpc;
 
+	    //get the address to compute the original 3 hit AddressPt
             ptadd address1 = getAddress1(CSChits);
             ptadd address0 = getAddress0(CSChits);
 
             CSCTFPtLUT lut = CSCTFPtLUT(LUTparam_, scale, ptScale);
             float pt_front = scaling(lut.PtReal(address1));
             float pt_rear = scaling(lut.PtReal(address0));
+	    float pt_best = pt_front;
 
             cout << "      ----> Calculating pT with PtAddress.h" << endl;
             cout << "       front scaled  = " << pt_front << " dpt: " << pt_front - ev.trkPt[csctrk] << endl;
             cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
             cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;
 
+	    //check whether front or rear address gives better value
             controlHistos_.fillHisto("dpt_front","all", pt_front - ev.trkPt[csctrk]);
             controlHistos_.fillHisto("dpt_rear","all",  pt_rear  - ev.trkPt[csctrk]);
             int minpt = abs(pt_front - ev.trkPt[csctrk]);
@@ -630,16 +667,19 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             if (minpt_rear < minpt) {
                 minpt = minpt_rear;
                 rear_address = true;
+		pt_best = pt_rear;
             }
+
+	    //Fill histograms with better pt value
             controlHistos_.fillHisto("dpt","all",minpt);
             controlHistos_.fillHisto("dphi_csc1_csc2_all","all",dphi12_all);
-            if (rear_address) {
-                controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_rear,dphi12_all);
-                controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_rear,dphi12_all);
-            } else {
-                controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_front,dphi12_all);
-                controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_front,dphi12_all);
-            }
+            controlHistos_.fillHisto("dphi_csc1_csc2_pt_all","all",pt_best,dphi12_all);
+            controlHistos_.fillHisto("dphi_csc1_csc2_invpt_all","all",1.0/pt_best,dphi12_all);
+	    //gen pt histograms
+	    if (hasGen){
+	    	controlHistos_.fillHisto("dphi_csc1_csc2_genpt_all","all",mc_pt,dphi12_all);
+	    	controlHistos_.fillHisto("dphi_csc1_csc2_invgenpt_all","all",1.0/mc_pt,dphi12_all);
+	    }
 
             CSChits.clear();
 
@@ -683,10 +723,6 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
                     controlHistos_.fillHisto("rpc_matches","all", ev.rpc_station[rpc]-1);
 
-//		    dphi12_rpc = ev.rpc_phi[rpc] - ev.csc_lctphi[0];
-
-//		    controlHistos_.fillHisto("dphi12_rpc","all",dphi12_rpc);
-
                 } else {
 
                     vector<int> cschit;
@@ -707,62 +743,62 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 
             if(!hasRPC) continue;
 
-            // Now swap out lct with matched rpc hit
+            // Compute dphi values for various tracks
             dphi12 = ev.csc_lctphi[1] - ev.csc_lctphi[0];
             dphi12_rpc = - ev.rpc_phi[rpc] + ev.csc_lctphi[0];
             dphi22_rpc = ev.csc_lctphi[1] - ev.rpc_phi[rpc];
             dphi23_rpc = ev.csc_lctphi[2] - ev.rpc_phi[rpc];
 
+	    // Fill 1D dPhi histograms
             controlHistos_.fillHisto("dphi_csc1_csc2","all",dphi12);
             controlHistos_.fillHisto("dphi_csc1_rpc2","all",dphi12_rpc);
             controlHistos_.fillHisto("dphi_rpc2_csc2","all",dphi22_rpc);
             controlHistos_.fillHisto("dphi_rpc2_csc3","all",dphi23_rpc);
 
+	    //get addresses for computing pT values
             ptadd address1_rpc = getAddress1(CSChits);
             ptadd address0_rpc = getAddress0(CSChits);
-            /*
-                        cout << " rpc_phi: " << ev.rpc_phi[rpc]
-                             << " rpc_eta: " << ev.rpc_eta[rpc]
-                             << " rpc_region: " << ev.rpc_region[rpc]
-                             << " rpc_station: " << ev.rpc_station[rpc]
-                             << " rpc_ring: " << ev.rpc_ring[rpc]
-                             << " csctrk: " << ev.csctrk
-                             << endl;
-            */
-
 
             float pt_front_rpc = scaling(lut.PtReal(address1_rpc));
             float pt_rear_rpc = scaling(lut.PtReal(address0_rpc));
+	    float pt_best_rpc = pt_front_rpc;
 
             /*cout << "      ----> Calculating pT with PtAddress.h" << endl;
             cout << "       front scaled  = " << pt_front << " dpt: " << pt_front - ev.trkPt[csctrk] << endl;
             cout << "       rear  scaled  = " << pt_rear << " dpt: " << pt_rear - ev.trkPt[csctrk] << endl;
             cout << "       Actual pT = " << ev.trkPt[csctrk] << endl;*/
 
-            float dpt;
+            float dpt = pt_front - pt_front_rpc;
 
+	    //check which pT is better
             if (rear_address) {
                 dpt = pt_rear - pt_rear_rpc;
-                controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_rear,dphi12);
-                controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_rear_rpc,dphi12_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_rear_rpc,dphi22_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_rear_rpc,dphi23_rpc);
-                controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_rear,dphi12);
-                controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_rear_rpc,dphi12_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi22_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_rear_rpc,dphi23_rpc);
-            } else {
-                dpt = pt_front - pt_front_rpc;
-                controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_front,dphi12);
-                controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_front_rpc,dphi12_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_front_rpc,dphi22_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_front_rpc,dphi23_rpc);
-                controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_front,dphi12);
-                controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_front_rpc,dphi12_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_front_rpc,dphi22_rpc);
-                controlHistos_.fillHisto("dphi_rpc2_csc3_invpt","all",1.0/pt_front_rpc,dphi23_rpc);
+		pt_best_rpc = pt_rear_rpc;
             }
 
+	    //Fill 2D dPhi/pT histograms
+	    controlHistos_.fillHisto("dphi_csc1_csc2_pt","all",pt_best,dphi12);
+            controlHistos_.fillHisto("dphi_csc1_rpc2_pt","all",pt_best_rpc,dphi12_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc2_pt","all",pt_best_rpc,dphi22_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc3_pt","all",pt_best_rpc,dphi23_rpc);
+            controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_best,dphi12);
+            controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_best_rpc,dphi12_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_best_rpc,dphi22_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_best_rpc,dphi23_rpc);
+
+	    //Fill Gen pT Histograms
+	    if (hasGen){
+	    	controlHistos_.fillHisto("dphi_csc1_csc2_genpt","all",mc_pt,dphi12);
+            	controlHistos_.fillHisto("dphi_csc1_rpc2_genpt","all",mc_pt,dphi12_rpc);
+            	controlHistos_.fillHisto("dphi_rpc2_csc2_genpt","all",mc_pt,dphi22_rpc);
+            	controlHistos_.fillHisto("dphi_rpc2_csc3_genpt","all",mc_pt,dphi23_rpc);
+            	controlHistos_.fillHisto("dphi_csc1_csc2_invgenpt","all",1.0/mc_pt,dphi12);
+            	controlHistos_.fillHisto("dphi_csc1_rpc2_invgenpt","all",1.0/mc_pt,dphi12_rpc);
+            	controlHistos_.fillHisto("dphi_rpc2_csc2_invgenpt","all",1.0/mc_pt,dphi22_rpc);
+            	controlHistos_.fillHisto("dphi_rpc2_csc2_invgenpt","all",1.0/mc_pt,dphi23_rpc);
+	    }
+
+	    //Fill dpt histograms
             controlHistos_.fillHisto("dpt_rpc","all", dpt);
             controlHistos_.fillHisto("dphi_rpc2_csc2_dpt","all",dpt,dphi22_rpc);
 

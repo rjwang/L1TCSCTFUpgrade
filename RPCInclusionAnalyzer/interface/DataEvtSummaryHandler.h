@@ -30,6 +30,7 @@ struct DataEvtSummary_t {
     //gen level event
     Int_t nmcparticles;
     Float_t mc_px[MAXPARTICLES],mc_py[MAXPARTICLES],mc_pz[MAXPARTICLES],mc_en[MAXPARTICLES];
+    Float_t mc_phi[MAXPARTICLES],mc_eta[MAXPARTICLES],mc_pt[MAXPARTICLES];
     Int_t mc_id[MAXPARTICLES], mc_status[MAXPARTICLES], mc_mom[MAXPARTICLES];
 
 

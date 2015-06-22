@@ -26,6 +26,9 @@ bool DataEvtSummaryHandler::initTree(TTree *t)
     t_->Branch("mc_py",         evSummary_.mc_py,           "mc_py[nmcparticles]/F");
     t_->Branch("mc_pz",         evSummary_.mc_pz,           "mc_pz[nmcparticles]/F");
     t_->Branch("mc_en",         evSummary_.mc_en,           "mc_en[nmcparticles]/F");
+    t_->Branch("mc_phi",        evSummary_.mc_phi,          "mc_phi[nmcparticles]/F");
+    t_->Branch("mc_eta",        evSummary_.mc_eta,          "mc_eta[nmcparticles]/F");
+    t_->Branch("mc_pt",         evSummary_.mc_pt,           "mc_pt[nmcparticles]/F");
     t_->Branch("mc_id",         evSummary_.mc_id,           "mc_id[nmcparticles]/I");
     t_->Branch("mc_status",     evSummary_.mc_status,       "mc_status[nmcparticles]/I");
     t_->Branch("mc_mom",        evSummary_.mc_mom,          "mc_mom[nmcparticles]/I");
@@ -98,6 +101,19 @@ bool DataEvtSummaryHandler::attachToTree(TTree *t)
     t_->SetBranchAddress("run",             &evSummary_.run);
     t_->SetBranchAddress("lumi",            &evSummary_.lumi);
     t_->SetBranchAddress("event",           &evSummary_.event);
+
+    //gen info
+    t_->SetBranchAddress("nmcparticles",  &evSummary_.nmcparticles);
+    t_->SetBranchAddress("mc_px",         evSummary_.mc_px);
+    t_->SetBranchAddress("mc_py",         evSummary_.mc_py);
+    t_->SetBranchAddress("mc_pz",         evSummary_.mc_pz);
+    t_->SetBranchAddress("mc_en",         evSummary_.mc_en);
+    t_->SetBranchAddress("mc_phi",        evSummary_.mc_phi);
+    t_->SetBranchAddress("mc_eta",        evSummary_.mc_eta);
+    t_->SetBranchAddress("mc_pt",         evSummary_.mc_pt);
+    t_->SetBranchAddress("mc_id",         evSummary_.mc_id);
+    t_->SetBranchAddress("mc_status",     evSummary_.mc_status);
+    t_->SetBranchAddress("mc_mom",        evSummary_.mc_mom);
 
     //rpc
     t_->SetBranchAddress("rpc",           	  &evSummary_.rpc);
