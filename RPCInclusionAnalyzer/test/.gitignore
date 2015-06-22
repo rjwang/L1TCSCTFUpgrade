@@ -15,3 +15,5 @@ Makefile
 # no private directory
 backup
 private
+*.pdf
+*.png
