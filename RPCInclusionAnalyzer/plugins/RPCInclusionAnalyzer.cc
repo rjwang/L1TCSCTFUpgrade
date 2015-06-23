@@ -201,6 +201,9 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dphi_rpc2_csc2_pt",";#it{p}_{T} (RPC Address) [GeV];#phi(CSC2) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
     controlHistos_.addHistogram("dphi_rpc2_csc3_pt",";#it{p}_{T} (RPC Address) [GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,140,3000,-.2,.2);
 
+    //Gen pT distribution w/ matching
+    controlHistos_.addHistogram("gen_pt_matched",";#it{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+
     //2D Histograms of dphi vs 1/pT
     controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T} (3 Hit Address) [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
     controlHistos_.addHistogram("dphi_csc1_csc2_invpt",";1 / #it{p}_{T} (3 Hit Address) [1/GeV];#phi(CSC2) - #phi(CSC1) [rad]",140,0,.4,300,-.2,.2);
@@ -221,6 +224,12 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dphi_rpc2_csc3_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
 
     //Efficiency histograms
+    controlHistos_.addHistogram("pt_turnon_threehit_all",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    //controlHistos_.addHistogram("pt_turnon_twohit_all",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc_all",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    controlHistos_.addHistogram("pt_turnon_threehit",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    //controlHistos_.addHistogram("pt_turnon_twohit",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -616,6 +625,10 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
 		}
 	    }
 
+	    if (hasGen){
+		controlHistos_.fillHisto("gen_pt_matched","all",mc_pt);
+	    }
+
 
             //Getting the CSC hits w/o RPC info
             for (int csclct = 0; csclct < ev.csclct; csclct++) {
@@ -784,7 +797,7 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             controlHistos_.fillHisto("dphi_csc1_csc2_invpt","all",1.0/pt_best,dphi12);
             controlHistos_.fillHisto("dphi_csc1_rpc2_invpt","all",1.0/pt_best_rpc,dphi12_rpc);
             controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_best_rpc,dphi22_rpc);
-            controlHistos_.fillHisto("dphi_rpc2_csc2_invpt","all",1.0/pt_best_rpc,dphi23_rpc);
+            controlHistos_.fillHisto("dphi_rpc2_csc3_invpt","all",1.0/pt_best_rpc,dphi23_rpc);
 
 	    //Fill Gen pT Histograms
 	    if (hasGen){
@@ -795,12 +808,26 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             	controlHistos_.fillHisto("dphi_csc1_csc2_invgenpt","all",1.0/mc_pt,dphi12);
             	controlHistos_.fillHisto("dphi_csc1_rpc2_invgenpt","all",1.0/mc_pt,dphi12_rpc);
             	controlHistos_.fillHisto("dphi_rpc2_csc2_invgenpt","all",1.0/mc_pt,dphi22_rpc);
-            	controlHistos_.fillHisto("dphi_rpc2_csc2_invgenpt","all",1.0/mc_pt,dphi23_rpc);
+            	controlHistos_.fillHisto("dphi_rpc2_csc3_invgenpt","all",1.0/mc_pt,dphi23_rpc);
 	    }
 
 	    //Fill dpt histograms
             controlHistos_.fillHisto("dpt_rpc","all", dpt);
             controlHistos_.fillHisto("dphi_rpc2_csc2_dpt","all",dpt,dphi22_rpc);
+
+
+	    //Fill turn on curves for efficiency histograms
+	    controlHistos_.fillHisto("pt_turnon_threehit_all","all",mc_pt);
+	    controlHistos_.fillHisto("pt_turnon_rpc_all","all",mc_pt);
+
+	    float thresh = 16.0;
+
+	    if (pt_best > thresh){
+		controlHistos_.fillHisto("pt_turnon_threehit","all",mc_pt);
+	    }
+	    if (pt_best_rpc > thresh){
+		controlHistos_.fillHisto("pt_turnon_rpc","all",mc_pt);
+	    }
 
         } // track
 
