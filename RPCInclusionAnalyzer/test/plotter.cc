@@ -134,7 +134,28 @@ void plotter(TString Input="csctf_mc.root")
     
     TH1F* hist_1 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_threehit_all");
     TH1F* hist_2 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_threehit");
-    heff = new TGraphAsymmErrors(hist_2, hist_1);
+    TH1F* heff = (TH1F*) hist_2->Clone();
+    heff->Divide(hist_1);
+
+    double n1, n2, e1, e2, ne, ee;
+
+    for (int i = 1; i < 14; i++){
+	n1 = hist_1->GetBinContent(i);
+	e1 = hist_1->GetBinError(i);
+	n2 = hist_2->GetBinContent(i);
+	e2 = hist_2->GetBinError(i);
+	ne = heff->GetBinContent(i);
+	
+	//Manually calculate errors for the efficiency
+	if (n1 && n2) {
+		ee = ne * sqrt(pow((e1/n1),2)+pow((e2/n2),2));
+	}
+	else {
+		ee = 0;
+	}
+	
+	heff->SetBinError(i,ee);
+    }
 
     heff->Draw();
 
@@ -144,14 +165,14 @@ void plotter(TString Input="csctf_mc.root")
     
     c->Modified();
     c->Update();
-    /*TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
+    TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
     stats->SetFillStyle(0);
     stats->SetName("");
     stats->SetX1NDC(.75);
-    stats->SetY1NDC(.60);
+    stats->SetY1NDC(.20);
     stats->SetX2NDC(.95);
-    stats->SetY2NDC(.93);
-    stats->SetTextColor(2);*/
+    stats->SetY2NDC(.53);
+    stats->SetTextColor(2);
     
     c->Update();
     
@@ -165,6 +186,8 @@ void plotter(TString Input="csctf_mc.root")
     delete hist_2;
     delete heff;
 
+
+    //RPC Efficiency Plots
     TCanvas *c = new TCanvas("c", "c", 700, 550);
     TPad* t1 = new TPad("t1","t1", 0.0, 0.0, 1.0, 1.00);
     t1->Draw();
@@ -174,7 +197,25 @@ void plotter(TString Input="csctf_mc.root")
 
     TH1F* hist_1 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_rpc_all");
     TH1F* hist_2 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_rpc");
-    heff = new TGraphAsymmErrors(hist_2, hist_1);
+    TH1F* heff = (TH1F*) hist_2->Clone();
+    heff->Divide(hist_1);
+
+    for (int i = 1; i < 14; i++){
+	n1 = hist_1->GetBinContent(i);
+	e1 = hist_1->GetBinError(i);
+	n2 = hist_2->GetBinContent(i);
+	e2 = hist_2->GetBinError(i);
+	ne = heff->GetBinContent(i);	
+
+	if (n1 && n2) {
+		ee = ne * sqrt(pow((e1/n1),2)+pow((e2/n2),2));
+	}
+	else {
+		ee = 0;
+	}
+	
+	heff->SetBinError(i,ee);
+    }
 
     heff->Draw();
 
@@ -184,14 +225,14 @@ void plotter(TString Input="csctf_mc.root")
     
     c->Modified();
     c->Update();    
-    /*TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
+    TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
     stats->SetFillStyle(0);
     stats->SetName("");
     stats->SetX1NDC(.75);
-    stats->SetY1NDC(.60);
+    stats->SetY1NDC(.20);
     stats->SetX2NDC(.95);
-    stats->SetY2NDC(.93);
-    stats->SetTextColor(2);*/
+    stats->SetY2NDC(.53);
+    stats->SetTextColor(2);
     c->Update();
     
     //Save plots

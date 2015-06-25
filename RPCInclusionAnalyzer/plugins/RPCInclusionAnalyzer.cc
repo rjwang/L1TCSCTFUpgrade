@@ -172,6 +172,10 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     summaryHandler_.initTree(  fs->make<TTree>("data","Event Summary") );
     TFileDirectory baseDir=fs->mkdir(iConfig.getParameter<std::string>("dtag"));
 
+    Double_t ptbins[14] = {
+        2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 20, 50, 140
+    };
+
     controlHistos_.addHistogram("nevents",";nevents; nevents",1,-0.5,0.5);
 
     controlHistos_.addHistogram("deltaR",";#Delta R; Event",500,0.,0.5);
@@ -203,6 +207,7 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
 
     //Gen pT distribution w/ matching
     controlHistos_.addHistogram("gen_pt_matched",";#it{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+    controlHistos_.addHistogram("dr_gen",";dR (Gen - Trk); Counts",300,0,1.3);
 
     //2D Histograms of dphi vs 1/pT
     controlHistos_.addHistogram("dphi_csc1_csc2_invpt_all",";1 / #it{p}_{T} (3 Hit Address) [1/GeV];CSC2 - CSC1",140,0,.4,300,-.2,.2);
@@ -224,12 +229,12 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dphi_rpc2_csc3_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
 
     //Efficiency histograms
-    controlHistos_.addHistogram("pt_turnon_threehit_all",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    controlHistos_.addHistogram("pt_turnon_threehit_all",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
     //controlHistos_.addHistogram("pt_turnon_twohit_all",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
-    controlHistos_.addHistogram("pt_turnon_rpc_all",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
-    controlHistos_.addHistogram("pt_turnon_threehit",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc_all",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
+    controlHistos_.addHistogram("pt_turnon_threehit",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
     //controlHistos_.addHistogram("pt_turnon_twohit",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
-    controlHistos_.addHistogram("pt_turnon_rpc",";{p}_{T} (Gen) [GeV]; Counts",10,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
@@ -625,8 +630,9 @@ RPCInclusionAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& iS
             //Get gen info and check for matched tracks
             for (int mc = 0; mc < ev.nmcparticles; mc++) {
                 float dR_Gen_Trk_temp = deltaR(ev.mc_phi[mc],ev.mc_eta[mc],ev.trkPhi[csctrk],ev.trkEta[csctrk]);
+		controlHistos_.fillHisto("dr_gen","all",dR_Gen_Trk_temp);
 
-                if (dR_Gen_Trk_temp < .05 && dR_Gen_Trk_temp < dR_Gen_Trk) {
+                if (dR_Gen_Trk_temp < 1.3 && dR_Gen_Trk_temp < dR_Gen_Trk) {
                     dR_Gen_Trk = dR_Gen_Trk_temp;
                     mc_pt  = ev.mc_pt[mc];
                     hasGen = true;
