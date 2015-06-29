@@ -9,12 +9,24 @@ void plotter(TString Input="csctf_mc.root")
 
     vector<TString> All1Dhists;
     vector<TString> All2Dhists;
+    vector<TString> AllEffhists;
 
     //Add 1D histograms to the list to be plotted
+    All1Dhists.push_back("dphi_csc1_csc2_all");
+    All1Dhists.push_back("dphi_csc1_rpc2");
+    All1Dhists.push_back("dphi_csc1_csc2");
+    All1Dhists.push_back("dphi_rpc2_csc3");
     All1Dhists.push_back("dphi_rpc2_csc2");
+    //All1Dhists.push_back("");
+
+
+
     //Add 2D histograms to the appropriate list
     All2Dhists.push_back("dphi_csc1_rpc2_invpt");
 
+
+    AllEffhists.push_back("pt_turnon_threehit");
+    AllEffhists.push_back("pt_turnon_rpc");
 
     //Set the plot style
     //gStyle->SetOptStat(0);
@@ -124,128 +136,154 @@ void plotter(TString Input="csctf_mc.root")
     }
 
 
-    //Efficiency Histograms
-    TCanvas *c = new TCanvas("c", "c", 700, 550);
-    TPad* t1 = new TPad("t1","t1", 0.0, 0.0, 1.0, 1.00);
-    t1->Draw();
-    t1->cd();
-    t1->SetRightMargin(0.03);
-    t1->SetLogx();
-    
-    TH1F* hist_1 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_threehit_all");
-    TH1F* hist_2 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_threehit");
-    TH1F* heff = (TH1F*) hist_2->Clone();
-    heff->Divide(hist_1);
+    //Loop over the 1D Eff histograms
+    for (size_t ihist = 0; ihist < AllEffhists.size(); ihist++) {
 
-    double n1, n2, e1, e2, ne, ee;
+	gStyle->SetOptStat(0);
+	//gROOT->ProcessLine(".L TurnOnFit.C");
 
-    for (int i = 1; i < 14; i++){
-	n1 = hist_1->GetBinContent(i);
-	e1 = hist_1->GetBinError(i);
-	n2 = hist_2->GetBinContent(i);
-	e2 = hist_2->GetBinError(i);
-	ne = heff->GetBinContent(i);
-	
-	//Manually calculate errors for the efficiency
-	if (n1 && n2) {
-		ee = ne * sqrt(pow((e1/n1),2)+pow((e2/n2),2));
-	}
-	else {
-		ee = 0;
-	}
-	
-	heff->SetBinError(i,ee);
+	//Read in the histogram
+        TH1F* hist_denominator = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/"+AllEffhists[ihist]+"_all");
+	TH1F* hist_numerator = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/"+AllEffhists[ihist]);
+
+	//Check if histogram actually exists
+        if (hist_denominator == NULL || hist_numerator == NULL) {
+            cout << "hist is NULL!" << endl;
+            continue;
+        }
+
+	//Set up the canvas
+        TCanvas *c = new TCanvas("c", "c", 700, 550);
+        //TCanvas *c = new TCanvas("c", "c", 900, 550);
+        TPad* t1 = new TPad("t1","t1", 0.0, 0.0, 1.0, 1.00);
+        t1->Draw();
+        t1->cd();
+        //t1->SetBottomMargin(0.3);
+        t1->SetRightMargin(0.03);
+        t1->SetLogx(1);
+        //c->Divide(1,2);
+
+	//Draw the histogram on the canvas
+	hist_numerator->Divide(hist_denominator);
+        hist_numerator->Draw("EP");
+
+	hist_numerator->SetMaximum(1.1);
+	hist_numerator->SetMinimum(0);
+	//Make plot look nice
+        //hx_->GetXaxis()->SetTitle("Vertices");
+        hist_numerator->GetYaxis()->SetTitle("Efficiency");
+        hist_numerator->SetFillColor(kYellow);
+
+
+  	TF1 *fit = new TF1("fit",turnon_func,10.,18.,3);
+  	fit->SetParameters(13.0,1.0,0.75);
+  	hist_numerator->Fit("fit");
+
+
+        c->Modified();
+        c->Update();
+        TPaveStats *stats =  (TPaveStats*) hist_numerator->GetListOfFunctions()->FindObject("stats");
+	stats->SetFillStyle(0);
+        stats->SetName("");
+        //stats->SetFillColor();
+        stats->SetX1NDC(.70);
+        stats->SetY1NDC(.27);
+        stats->SetX2NDC(.85);
+        stats->SetY2NDC(.53);
+        stats->SetTextColor(2);
+
+
+
+	//Save plots
+        c->SaveAs("Eff_"+AllEffhists[ihist]+".png");
+        c->SaveAs("Eff_"+AllEffhists[ihist]+".pdf");
+
+	//delete pointers
+        delete c;
+        delete hist_denominator;
+	delete hist_numerator;
     }
 
-    heff->Draw();
 
-    //Make plot look nice
-    heff->GetYaxis()->SetTitle("Efficiency");
-    heff->SetFillColor(kYellow);
-    
-    c->Modified();
-    c->Update();
-    TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
-    stats->SetFillStyle(0);
-    stats->SetName("");
-    stats->SetX1NDC(.75);
-    stats->SetY1NDC(.20);
-    stats->SetX2NDC(.95);
-    stats->SetY2NDC(.53);
-    stats->SetTextColor(2);
-    
-    c->Update();
-    
-    //Save plots
-    c->SaveAs("efficiency_threehit.png");
-    c->SaveAs("efficiency_threehit.pdf");
-    
-    //delete pointers
-    delete c;
-    delete hist_1;
-    delete hist_2;
-    delete heff;
-
-
-    //RPC Efficiency Plots
-    TCanvas *c = new TCanvas("c", "c", 700, 550);
-    TPad* t1 = new TPad("t1","t1", 0.0, 0.0, 1.0, 1.00);
-    t1->Draw();
-    t1->cd();
-    t1->SetRightMargin(0.03);
-    t1->SetLogx();
-
-    TH1F* hist_1 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_rpc_all");
-    TH1F* hist_2 = (TH1F*) infile->Get("RPCInclusionAnalyzer/csctf/pt_turnon_rpc");
-    TH1F* heff = (TH1F*) hist_2->Clone();
-    heff->Divide(hist_1);
-
-    for (int i = 1; i < 14; i++){
-	n1 = hist_1->GetBinContent(i);
-	e1 = hist_1->GetBinError(i);
-	n2 = hist_2->GetBinContent(i);
-	e2 = hist_2->GetBinError(i);
-	ne = heff->GetBinContent(i);	
-
-	if (n1 && n2) {
-		ee = ne * sqrt(pow((e1/n1),2)+pow((e2/n2),2));
-	}
-	else {
-		ee = 0;
-	}
-	
-	heff->SetBinError(i,ee);
-    }
-
-    heff->Draw();
-
-    //Make plot look nice
-    heff->GetYaxis()->SetTitle("Efficiency");
-    heff->SetFillColor(kBlue);
-    
-    c->Modified();
-    c->Update();    
-    TPaveStats *stats =  (TPaveStats*) heff->GetListOfFunctions()->FindObject("stats");
-    stats->SetFillStyle(0);
-    stats->SetName("");
-    stats->SetX1NDC(.75);
-    stats->SetY1NDC(.20);
-    stats->SetX2NDC(.95);
-    stats->SetY2NDC(.53);
-    stats->SetTextColor(2);
-    c->Update();
-    
-    //Save plots
-    c->SaveAs("efficiency_rpc.png");
-    c->SaveAs("efficiency_rpc.pdf");
-    
-    //delete pointers
-    delete c;
-    delete hist_1;
-    delete hist_2;
-    delete heff;
 
 
     infile->Close();
 
 }
+
+
+
+void TurnOnFit(TH1 *h1, TH1 *h2, TH1 *h) {
+  // Calculate the efficiency bin by bin as the ratio of two histograms.
+  // Errors on the efficiency are calculated properly.
+
+  int nbins = h->GetNbinsX();
+
+  // Check histogram compatibility
+  if (nbins != h1->GetNbinsX() || nbins != h2->GetNbinsX()) {
+    std::cout << "Attempt to divide histograms with different number of bins" << std::endl;
+    return;
+  }
+
+  // Issue a Warning if histogram limits are different
+  if (h->GetXaxis()->GetXmin() != h1->GetXaxis()->GetXmin() ||
+      h->GetXaxis()->GetXmax() != h1->GetXaxis()->GetXmax() ){
+    std::cout << "Attempt to divide histograms with different axis limits" << std::endl;
+  }
+
+  if (h->GetXaxis()->GetXmin() != h2->GetXaxis()->GetXmin() ||
+      h->GetXaxis()->GetXmax() != h2->GetXaxis()->GetXmax() ){
+    std::cout << "Attempt to divide histograms with different axis limits" << std::endl;
+  }
+
+  //if (h->GetDimension() < 2) nbinsy = -1;
+
+  // Loop on bins (including underflows/overflows)
+  int bin;
+  double b1,b2,effi,erro;
+  for (bin=0;bin<=nbins+1;bin++) {
+
+    b1  = h1->GetBinContent(bin);
+    b2  = h2->GetBinContent(bin);
+    //std::cout << "b1: " << b1 << endl;
+    //std::cout << "b2: " << b2 << endl;
+
+    if ( b2 ) {
+      effi = b1/b2;
+      erro = TMath::Sqrt((1-b1/b2)/b2*(b1/b2));
+      //std::cout << "effi: " << effi << endl;
+      //std::cout << "erro: " << erro << endl;
+    } else {
+      effi = 0;
+      erro = 0;
+    }
+    h->SetBinContent(bin,effi);
+    h->SetBinError(bin,erro);
+  }
+}
+
+Double_t turnon_func(Double_t *x, Double_t *par)
+{
+  double halfpoint = par[0];
+  double slope = par[1];
+  double plateau = par[2];
+
+  //double offset = par[3];
+  //double plateau = 1.0;
+  double offset = 0;
+
+  double pt = TMath::Max(x[0],0.000001);
+
+   double arg = 0;
+   //cout << pt <<", "<< halfpoint <<", " << slope <<endl;
+   arg = (pt - halfpoint)/(TMath::Sqrt(pt)*slope);
+   double fitval = offset+0.5*plateau*(1+TMath::Erf(arg));
+   return fitval;
+}
+
+Double_t turnon_func2(Double_t *x, Double_t *par)
+{
+  return turnon_func(x,par) + turnon_func(x,&par[3]);
+}
+
+

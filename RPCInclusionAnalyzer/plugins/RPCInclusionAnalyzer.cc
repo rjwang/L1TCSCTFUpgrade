@@ -229,12 +229,12 @@ RPCInclusionAnalyzer::RPCInclusionAnalyzer(const edm::ParameterSet& iConfig):
     controlHistos_.addHistogram("dphi_rpc2_csc3_invgenpt",";1 / #it{p}_{T} (Gen) [1/GeV];#phi(CSC3) - #phi(RPC2) [rad]",140,0,.4,3000,-.2,.2);
 
     //Efficiency histograms
-    controlHistos_.addHistogram("pt_turnon_threehit_all",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
-    //controlHistos_.addHistogram("pt_turnon_twohit_all",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
-    controlHistos_.addHistogram("pt_turnon_rpc_all",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
-    controlHistos_.addHistogram("pt_turnon_threehit",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
-    //controlHistos_.addHistogram("pt_turnon_twohit",";{p}_{T} (Gen) [GeV]; Counts",140,0,140);
-    controlHistos_.addHistogram("pt_turnon_rpc",";{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
+    controlHistos_.addHistogram("pt_turnon_threehit_all",";#it{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
+    //controlHistos_.addHistogram("pt_turnon_twohit_all",";#it{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc_all",";#it{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
+    controlHistos_.addHistogram("pt_turnon_threehit",";#it{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
+    //controlHistos_.addHistogram("pt_turnon_twohit",";#it{p}_{T} (Gen) [GeV]; Counts",140,0,140);
+    controlHistos_.addHistogram("pt_turnon_rpc",";#it{p}_{T} (Gen) [GeV]; Counts",13,ptbins);
 
     RPCTPTag_      = iConfig.getParameter<edm::InputTag>("RPCTPTag");
     CSCTFTag_      = iConfig.getParameter<edm::InputTag>("CSCTFTag");
